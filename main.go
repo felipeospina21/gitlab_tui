@@ -5,6 +5,7 @@ import (
 	"gitlab_tui/api"
 	"gitlab_tui/command"
 	"gitlab_tui/config"
+	"log"
 	"os"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -24,17 +25,18 @@ const (
 const (
 	tableView currView = iota
 	detailView
+	commentsView
 )
 
 const (
-	mrId mrRow = iota
-	mrTitle
-	mrDesc
-	mrAuthor
-	mrStatus
-	mrDraft
-	mrConflicts
-	mrUrl
+	idColIdx mrRow = iota
+	titleColIdx
+	authorColIdx
+	statusColIdx
+	draftColIdx
+	conflictsColIdx
+	urlColIdx
+	descColIdx
 )
 
 type (
@@ -43,9 +45,10 @@ type (
 )
 
 type model struct {
-	table    table.Model
-	detail   detail
-	currView currView
+	mergeRequests         mergeRequests
+	mergeRequestsComments mergeRequestsComments
+	detail                detail
+	currView              currView
 }
 
 func (m model) Init() tea.Cmd { return nil }
@@ -58,10 +61,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
-			if m.table.Focused() {
-				m.table.Blur()
+			if m.mergeRequests.model.Focused() {
+				m.mergeRequests.model.Blur()
 			} else {
-				m.table.Focus()
+				m.mergeRequests.model.Focus()
 			}
 		case "q", "ctrl+c":
 			cmds = append(cmds, tea.Quit)
@@ -71,13 +74,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tableView:
 			switch msg.String() {
 			case "x":
-				selectedUrl := m.table.SelectedRow()[mrUrl]
+				selectedUrl := m.mergeRequests.model.SelectedRow()[urlColIdx]
 				command.Openbrowser(selectedUrl)
 
 			case "enter":
 				m.setResponseContent()
 				m.currView = detailView
 
+			case "c":
+				m.mergeRequests.selectedMr = m.mergeRequests.model.SelectedRow()[idColIdx]
+				logToFile("selected mr", func() {
+					log.Println(m.mergeRequests.selectedMr)
+				})
+				c := func() tea.Msg {
+					r, err := api.GetMRComments(m.mergeRequests.model.SelectedRow()[idColIdx])
+					if err != nil {
+						return err
+					}
+					return r
+				}
+				cmds = append(cmds, c)
 			}
 
 		case detailView:
@@ -87,8 +103,58 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
+	case error:
+		logToFile("error", func() {
+			log.Println(msg)
+		})
+
+	case []table.Row:
+		// TODO: extract this logic
+		// BUG: Table is not interactive
+
+		s := table.DefaultStyles()
+		s.Header = s.Header.
+			BorderStyle(lipgloss.NormalBorder()).
+			BorderForeground(lipgloss.Color("240")).
+			BorderBottom(true).
+			Bold(false)
+		s.Selected = s.Selected.
+			Foreground(lipgloss.Color("229")).
+			Background(lipgloss.Color("57")).
+			Bold(false)
+
+		columns := []table.Column{
+			{Title: "Id", Width: 4},
+			{Title: "Type", Width: 10},
+			{Title: "Author", Width: 20},
+			{Title: "Created At", Width: 20},
+			{Title: "Updated At", Width: 20},
+			{Title: "Resolved", Width: 10},
+			{Title: "Body", Width: 0},
+		}
+		m.mergeRequestsComments.model.SetStyles(s)
+		m.mergeRequestsComments.model.SetHeight(len(msg))
+
+		m.mergeRequestsComments.model.SetColumns(columns)
+		m.mergeRequestsComments.model.SetRows(msg)
+		m.mergeRequestsComments.model.Focus()
+		m.mergeRequestsComments.model.UpdateViewport()
+		m.currView = commentsView
+		logToFile("rows", func() {
+			log.Println(msg)
+		})
+
+		isRespReady := func() tea.Msg {
+			return "comments_ready"
+		}
+		cmds = append(cmds, isRespReady)
+
 	case tea.WindowSizeMsg:
-		headerHeight := lipgloss.Height(m.headerView(m.table.SelectedRow()[mrTitle]))
+
+		m.mergeRequests.model.SetWidth(msg.Width)
+		m.mergeRequestsComments.model.SetWidth(msg.Width)
+		// m.table.SetHeight(msg.Height)
+		headerHeight := lipgloss.Height(m.headerView(m.mergeRequests.model.SelectedRow()[titleColIdx]))
 		footerHeight := lipgloss.Height(m.footerView())
 		verticalMarginHeight := headerHeight + footerHeight
 		cmd = m.setViewportViewSize(msg, headerHeight, verticalMarginHeight)
@@ -98,39 +164,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	}
-	m.table, cmd = m.table.Update(msg)
+	m.mergeRequests.model, cmd = m.mergeRequests.model.Update(msg)
 	return m, tea.Batch(cmds...)
 }
 
 func (m model) View() string {
 	if m.currView == detailView {
-		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.table.SelectedRow()[mrTitle]), m.detail.model.View(), m.footerView())
+		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.mergeRequests.model.SelectedRow()[titleColIdx]), m.detail.model.View(), m.footerView())
 	}
-	return baseStyle.Render(m.table.View()) + "\n"
+
+	if m.currView == commentsView {
+		return baseStyle.Render(m.mergeRequestsComments.model.View()) + "\n"
+	}
+	return baseStyle.Render(m.mergeRequests.model.View()) + "\n"
 }
 
 func main() {
 	config.Load(&config.Config)
 
-	r := api.GetMergeRequests()
-
-	columns := []table.Column{
-		{Title: "Iid", Width: 4},
-		{Title: "Title", Width: 50},
-		{Title: "Description", Width: 0},
-		{Title: "Author", Width: 15},
-		{Title: "Status", Width: 15},
-		{Title: "Draft", Width: 10},
-		{Title: "Conflicts", Width: 10},
-		{Title: "Url", Width: 0},
-	}
-
-	t := table.New(
-		table.WithColumns(columns),
-		table.WithRows(r),
-		table.WithFocused(true),
-		table.WithHeight(len(r)),
-	)
+	// r := api.GetMRComments("3913")
 
 	s := table.DefaultStyles()
 	s.Header = s.Header.
@@ -142,11 +194,29 @@ func main() {
 		Foreground(lipgloss.Color("229")).
 		Background(lipgloss.Color("57")).
 		Bold(false)
+
+	t := setMergeRequestsModel()
 	t.SetStyles(s)
 
-	m := model{table: t, currView: tableView}
+	m := model{mergeRequests: mergeRequests{model: t}, currView: tableView}
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
 	}
+}
+
+// Logs to debug.log file
+//
+//	logToFile("log", func() {
+//		log.Println(strconv.Itoa(msg.Width))
+//		log.Println("tw " + strconv.Itoa(m.table.Width()))
+//	})
+func logToFile(logPrefix string, cb func()) {
+	f, err := tea.LogToFile("debug.log", logPrefix)
+	if err != nil {
+		fmt.Println("fatal:", err)
+		os.Exit(1)
+	}
+	defer f.Close()
+	cb()
 }

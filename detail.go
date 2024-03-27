@@ -51,7 +51,7 @@ func (m *model) footerView() string {
 }
 
 func (m *model) setResponseContent() {
-	content := string(m.table.SelectedRow()[mrDesc])
+	content := string(m.mergeRequests.model.SelectedRow()[descColIdx])
 	styledContent := lipgloss.NewStyle().Width(m.detail.model.Width - RESPONSE_RIGHT_MARGIN).Render(content)
 	m.detail.model.SetContent(styledContent)
 }
