@@ -17,38 +17,41 @@ var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
 	BorderForeground(lipgloss.Color("240"))
 
+// Table Styles
+var (
+	tableStyle       = table.DefaultStyles()
+	tableHeaderStyle = tableStyle.Header.BorderStyle(lipgloss.NormalBorder()).
+				BorderForeground(lipgloss.Color("240")).
+				BorderBottom(true).
+				Bold(false)
+	tableSelectedStyle = tableStyle.Selected.
+				Foreground(lipgloss.Color("229")).
+				Background(lipgloss.Color("57")).
+				Bold(false)
+)
+
 const (
 	RESPONSE_RIGHT_MARGIN      = 2
 	useHighPerformanceRenderer = false
 )
 
 const (
-	tableView currView = iota
+	mrTableView currView = iota
 	detailView
-	commentsView
-)
-
-const (
-	idColIdx mrRow = iota
-	titleColIdx
-	authorColIdx
-	statusColIdx
-	draftColIdx
-	conflictsColIdx
-	urlColIdx
-	descColIdx
+	commentsTableView
+	tabsView
 )
 
 type (
-	currView uint
-	mrRow    uint
+	currView      uint
+	tableColIndex uint
 )
 
 type model struct {
-	mergeRequests         mergeRequests
-	mergeRequestsComments mergeRequestsComments
-	detail                detail
-	currView              currView
+	tabs          tabsModel
+	mergeRequests mergeRequests
+	detail        detailModel
+	currView      currView
 }
 
 func (m model) Init() tea.Cmd { return nil }
@@ -59,35 +62,37 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		// Global commands
 		switch msg.String() {
 		case "esc":
-			if m.mergeRequests.model.Focused() {
-				m.mergeRequests.model.Blur()
+			if m.mergeRequests.list.Focused() {
+				m.mergeRequests.list.Blur()
 			} else {
-				m.mergeRequests.model.Focus()
+				m.mergeRequests.list.Focus()
 			}
 		case "q", "ctrl+c":
 			cmds = append(cmds, tea.Quit)
+
+		case "tab":
+			m.currView = detailView
 		}
 
 		switch m.currView {
-		case tableView:
+		case mrTableView:
 			switch msg.String() {
 			case "x":
-				selectedUrl := m.mergeRequests.model.SelectedRow()[urlColIdx]
+				selectedUrl := m.mergeRequests.list.SelectedRow()[mergeReqsUrlIdx]
 				command.Openbrowser(selectedUrl)
 
 			case "enter":
-				m.setResponseContent()
+				content := string(m.mergeRequests.list.SelectedRow()[mergeReqsDescIdx])
+				m.setResponseContent(content)
 				m.currView = detailView
 
 			case "c":
-				m.mergeRequests.selectedMr = m.mergeRequests.model.SelectedRow()[idColIdx]
-				logToFile("selected mr", func() {
-					log.Println(m.mergeRequests.selectedMr)
-				})
+				m.mergeRequests.selectedMr = m.mergeRequests.list.SelectedRow()[mergeReqsIdIdx]
 				c := func() tea.Msg {
-					r, err := api.GetMRComments(m.mergeRequests.model.SelectedRow()[idColIdx])
+					r, err := api.GetMRComments(m.mergeRequests.list.SelectedRow()[mergeReqsIdIdx])
 					if err != nil {
 						return err
 					}
@@ -99,7 +104,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case detailView:
 			switch msg.String() {
 			case "backspace":
-				m.currView = tableView
+				m.currView = mrTableView
+			}
+
+		case commentsTableView:
+			switch msg.String() {
+			case "x":
+				selectedUrl := m.mergeRequests.comments.SelectedRow()[mergeReqsUrlIdx]
+				command.Openbrowser(selectedUrl)
+
+			case "enter":
+				content := string(m.mergeRequests.comments.SelectedRow()[commentsBodyIdx])
+				m.setResponseContent(content)
+
+				// BUG: detail view commands not properly working
+				m.currView = detailView
 			}
 		}
 
@@ -109,40 +128,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		})
 
 	case []table.Row:
-		// TODO: extract this logic
-		// BUG: Table is not interactive
-
-		s := table.DefaultStyles()
-		s.Header = s.Header.
-			BorderStyle(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color("240")).
-			BorderBottom(true).
-			Bold(false)
-		s.Selected = s.Selected.
-			Foreground(lipgloss.Color("229")).
-			Background(lipgloss.Color("57")).
-			Bold(false)
-
-		columns := []table.Column{
-			{Title: "Id", Width: 4},
-			{Title: "Type", Width: 10},
-			{Title: "Author", Width: 20},
-			{Title: "Created At", Width: 20},
-			{Title: "Updated At", Width: 20},
-			{Title: "Resolved", Width: 10},
-			{Title: "Body", Width: 0},
-		}
-		m.mergeRequestsComments.model.SetStyles(s)
-		m.mergeRequestsComments.model.SetHeight(len(msg))
-
-		m.mergeRequestsComments.model.SetColumns(columns)
-		m.mergeRequestsComments.model.SetRows(msg)
-		m.mergeRequestsComments.model.Focus()
-		m.mergeRequestsComments.model.UpdateViewport()
-		m.currView = commentsView
-		logToFile("rows", func() {
-			log.Println(msg)
-		})
+		m.mergeRequests.comments = setMergeRequestsCommentsModel(msg)
+		m.mergeRequests.comments.SetStyles(tableStyle)
+		m.currView = commentsTableView
 
 		isRespReady := func() tea.Msg {
 			return "comments_ready"
@@ -151,10 +139,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 
-		m.mergeRequests.model.SetWidth(msg.Width)
-		m.mergeRequestsComments.model.SetWidth(msg.Width)
+		// NOTE: Resize tabs width
+		// numTabs := len(m.tabs.Tabs)
+		// x := msg.Width
+		// a := x / numTabs
+		// inactiveTabStyle.Width(a - docStyle.GetHorizontalPadding())
+		// activeTabStyle.Width(a - docStyle.GetHorizontalPadding())
+
+		m.mergeRequests.list.SetWidth(msg.Width)
+		m.mergeRequests.comments.SetWidth(msg.Width)
 		// m.table.SetHeight(msg.Height)
-		headerHeight := lipgloss.Height(m.headerView(m.mergeRequests.model.SelectedRow()[titleColIdx]))
+		headerHeight := lipgloss.Height(m.headerView(m.mergeRequests.list.SelectedRow()[mergeReqsTitleIdx]))
 		footerHeight := lipgloss.Height(m.footerView())
 		verticalMarginHeight := headerHeight + footerHeight
 		cmd = m.setViewportViewSize(msg, headerHeight, verticalMarginHeight)
@@ -164,19 +159,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	}
-	m.mergeRequests.model, cmd = m.mergeRequests.model.Update(msg)
+	m.mergeRequests.list, cmd = m.mergeRequests.list.Update(msg)
+	m.mergeRequests.comments, cmd = m.mergeRequests.comments.Update(msg)
 	return m, tea.Batch(cmds...)
 }
 
 func (m model) View() string {
-	if m.currView == detailView {
-		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.mergeRequests.model.SelectedRow()[titleColIdx]), m.detail.model.View(), m.footerView())
-	}
+	switch m.currView {
+	case detailView:
+		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.mergeRequests.list.SelectedRow()[mergeReqsTitleIdx]), m.detail.model.View(), m.footerView())
 
-	if m.currView == commentsView {
-		return baseStyle.Render(m.mergeRequestsComments.model.View()) + "\n"
+	case commentsTableView:
+		return baseStyle.Render(m.mergeRequests.comments.View()) + "\n"
+
+	case tabsView:
+		return m.tabsView()
+
+	default:
+		return baseStyle.Render(m.mergeRequests.list.View()) + "\n"
+
 	}
-	return baseStyle.Render(m.mergeRequests.model.View()) + "\n"
 }
 
 func main() {
@@ -184,21 +186,17 @@ func main() {
 
 	// r := api.GetMRComments("3913")
 
-	s := table.DefaultStyles()
-	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(false)
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
-		Bold(false)
+	t := setMergeRequestsListModel()
+	t.SetStyles(tableStyle)
 
-	t := setMergeRequestsModel()
-	t.SetStyles(s)
-
-	m := model{mergeRequests: mergeRequests{model: t}, currView: tableView}
+	m := model{
+		mergeRequests: mergeRequests{list: t},
+		currView:      mrTableView,
+		// tabs: tabsModel{
+		// 	Tabs:       []string{"Merge Requests", "Comments"},
+		// 	TabContent: []string{"MRs", "Comments"},
+		// },
+	}
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)

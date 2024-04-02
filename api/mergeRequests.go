@@ -2,8 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
-	"gitlab_tui/config"
 	"log"
 	"os"
 	"strconv"
@@ -74,13 +72,13 @@ type GetMergeRequestsCommentsResponse = struct {
 }
 
 func GetMRComments(mrId string) ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.Config.BaseUrl, config.Config.ApiVersion, config.Config.ProjectsId.PlanningTool, mrId)
-	token := config.Config.ApiToken
-	mrUrlParams := []string{"order_by=updated_at"}
-	params := "?" + strings.Join(mrUrlParams, "&")
+	// url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.Config.BaseUrl, config.Config.ApiVersion, config.Config.ProjectsId.PlanningTool, mrId)
+	// token := config.Config.ApiToken
+	// mrUrlParams := []string{"order_by=updated_at"}
+	// params := "?" + strings.Join(mrUrlParams, "&")
 
-	responseData, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
-	// responseData, err := os.ReadFile("planning_mr.json")
+	// responseData, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
+	responseData, err := os.ReadFile("comments.json")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
@@ -96,12 +94,15 @@ func GetMRComments(mrId string) ([]table.Row, error) {
 	var rows []table.Row
 	for _, item := range r {
 		if item.Type != "" {
+			createdAt, _, _ := strings.Cut(item.CreatedAt, "T")
+			UpdatedAt, _, _ := strings.Cut(item.UpdatedAt, "T")
+
 			n := table.Row{
 				strconv.Itoa(item.Id),
 				item.Type,
 				item.Author.Name,
-				item.CreatedAt,
-				item.UpdatedAt,
+				createdAt,
+				UpdatedAt,
 				strconv.FormatBool(item.Resolved),
 				item.Body,
 			}

@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -24,12 +26,13 @@ var (
 )
 
 type (
-	responseMsg     string
-	isResponseReady bool
-	errMsg          struct{ err error }
+	responseMsg        string
+	contentRenderedMsg string
+	isResponseReady    bool
+	errMsg             struct{ err error }
 )
 
-type detail struct {
+type detailModel struct {
 	model   viewport.Model
 	ready   isResponseReady
 	content responseMsg
@@ -50,9 +53,11 @@ func (m *model) footerView() string {
 	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
 }
 
-func (m *model) setResponseContent() {
-	content := string(m.mergeRequests.model.SelectedRow()[descColIdx])
-	styledContent := lipgloss.NewStyle().Width(m.detail.model.Width - RESPONSE_RIGHT_MARGIN).Render(content)
+func (m *model) setResponseContent(content string) {
+	// styledContent := lipgloss.NewStyle().Width(m.detail.model.Width - RESPONSE_RIGHT_MARGIN).Render(content)
+
+	styledContent := renderWithGlamour(m.detail, content)
+
 	m.detail.model.SetContent(styledContent)
 }
 
@@ -98,4 +103,49 @@ func max(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func renderWithGlamour(m detailModel, md string) string {
+	s, err := glamourRender(m, md)
+	if err != nil {
+		log.Println("error rendering with Glamour:", err)
+	}
+	return s
+}
+
+// This is where the magic happens.
+func glamourRender(m detailModel, markdown string) (string, error) {
+	// initialize glamour
+	var gs glamour.TermRendererOption
+	gs = glamour.WithAutoStyle()
+
+	// width := max(0, min(int(m.common.cfg.GlamourMaxWidth), m.model.Width))
+	width := m.model.Width
+	r, err := glamour.NewTermRenderer(
+		gs,
+		glamour.WithWordWrap(width),
+	)
+	if err != nil {
+		return "", err
+	}
+
+	out, err := r.Render(markdown)
+	if err != nil {
+		return "", err
+	}
+
+	// trim lines
+	lines := strings.Split(out, "\n")
+
+	var content string
+	for i, s := range lines {
+		content += strings.TrimSpace(s)
+
+		// don't add an artificial newline after the last split
+		if i+1 < len(lines) {
+			content += "\n"
+		}
+	}
+
+	return content, nil
 }

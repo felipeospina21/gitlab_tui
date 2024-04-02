@@ -6,12 +6,34 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 )
 
+const (
+	mergeReqsIdIdx tableColIndex = iota
+	mergeReqsTitleIdx
+	mergeReqsAuthorIdx
+	mergeReqsStatusIdx
+	mergeReqsDraftIdx
+	mergeReqsConflictsIdx
+	mergeReqsUrlIdx
+	mergeReqsDescIdx
+)
+
+const (
+	commentsIdIdx tableColIndex = iota
+	commentsTypeIdx
+	commentsAuthorIdx
+	commentsCreatedAtIdx
+	commentsUpdatedAtIdx
+	commentsResolvedIdx
+	commentsBodyIdx
+)
+
 type mergeRequests struct {
-	model      table.Model
+	list       table.Model
+	comments   table.Model
 	selectedMr string
 }
 
-func setMergeRequestsModel() table.Model {
+func setMergeRequestsListModel() table.Model {
 	r := api.GetMergeRequests()
 
 	columns := []table.Column{
@@ -30,6 +52,26 @@ func setMergeRequestsModel() table.Model {
 		table.WithRows(r),
 		table.WithFocused(true),
 		table.WithHeight(len(r)),
+	)
+
+	return t
+}
+
+func setMergeRequestsCommentsModel(msg []table.Row) table.Model {
+	columns := []table.Column{
+		{Title: "Id", Width: 10},
+		{Title: "Type", Width: 20},
+		{Title: "Author", Width: 20},
+		{Title: "Created At", Width: 30},
+		{Title: "Updated At", Width: 30},
+		{Title: "Resolved", Width: 10},
+		{Title: "Body", Width: 0},
+	}
+	t := table.New(
+		table.WithColumns(columns),
+		table.WithRows(msg),
+		table.WithFocused(true),
+		table.WithHeight(len(msg)),
 	)
 
 	return t
