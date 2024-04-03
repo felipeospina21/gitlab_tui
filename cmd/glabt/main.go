@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"gitlab_tui/config"
 	"gitlab_tui/internal/style"
-	"gitlab_tui/tui"
+	"gitlab_tui/internal/tui"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 const (
-	RESPONSE_RIGHT_MARGIN = 2
+	responseRightMargin = 2
 )
 
 func main() {

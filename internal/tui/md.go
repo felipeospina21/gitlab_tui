@@ -41,8 +41,6 @@ func (m *Model) footerView() string {
 }
 
 func (m *Model) setResponseContent(content string) {
-	// styledContent := lipgloss.NewStyle().Width(m.detail.model.Width - RESPONSE_RIGHT_MARGIN).Render(content)
-
 	styledContent := renderWithGlamour(m.Md, content)
 
 	m.Md.Viewport.SetContent(styledContent)
@@ -103,8 +101,7 @@ func renderWithGlamour(m MdModel, md string) string {
 // This is where the magic happens.
 func glamourRender(m MdModel, markdown string) (string, error) {
 	// initialize glamour
-	var gs glamour.TermRendererOption
-	gs = glamour.WithAutoStyle()
+	gs := glamour.WithAutoStyle()
 
 	// width := max(0, min(int(m.common.cfg.GlamourMaxWidth), m.model.Width))
 	width := m.Viewport.Width

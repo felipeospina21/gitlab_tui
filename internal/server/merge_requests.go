@@ -1,9 +1,10 @@
-package api
+package server
 
 import (
 	"encoding/json"
-	"log"
-	"os"
+	"fmt"
+	"gitlab_tui/config"
+	"gitlab_tui/internal/logger"
 	"strconv"
 	"strings"
 
@@ -13,46 +14,45 @@ import (
 type MrCommentsQueryResponse = []table.Row
 
 type GetMergeRequestsResponse = struct {
-	Id     int    `json:"iid"`
+	ID     int    `json:"iid"`
 	Title  string `json:"title"`
 	Desc   string `json:"description"`
 	Author struct {
 		Name string `json:"name"`
 	}
 	MergeStatus  string `json:"merge_status"`
-	Url          string `json:"web_url"`
+	URL          string `json:"web_url"`
 	HasConflicts bool   `json:"has_conflicts"`
 	IsDraft      bool   `json:"draft"`
 }
 
 func GetMergeRequests() []table.Row {
-	// url := fmt.Sprintf("%s/%s/projects/%s/merge_requests", config.Config.BaseUrl, config.Config.ApiVersion, config.Config.ProjectsId.PlanningTool)
-	// token := config.Config.ApiToken
-	// mrUrlParams := []string{"state=opened"}
-	// params := "?" + strings.Join(mrUrlParams, "&")
-	//
-	// responseData, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
-	responseData, err := os.ReadFile("planning_mr.json")
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests", config.Config.BaseUrl, config.Config.ApiVersion, config.Config.ProjectsId.PlanningTool)
+	token := config.Config.ApiToken
+	mrURLParams := []string{"state=opened"}
+	params := "?" + strings.Join(mrURLParams, "&")
+
+	responseData, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
 
 	var r []GetMergeRequestsResponse
 	if err := json.Unmarshal(responseData, &r); err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
 
 	// transforms response interface to match table Row
 	var rows []table.Row
 	for _, item := range r {
 		n := table.Row{
-			strconv.Itoa(item.Id),
+			strconv.Itoa(item.ID),
 			item.Title,
 			item.Author.Name,
 			item.MergeStatus,
 			strconv.FormatBool(item.IsDraft),
 			strconv.FormatBool(item.HasConflicts),
-			item.Url,
+			item.URL,
 			item.Desc,
 		}
 		rows = append(rows, n)
@@ -62,7 +62,7 @@ func GetMergeRequests() []table.Row {
 }
 
 type GetMergeRequestsCommentsResponse = struct {
-	Id     int    `json:"id"`
+	ID     int    `json:"id"`
 	Type   string `json:"type"`
 	Body   string `json:"body"`
 	Author struct {
@@ -73,24 +73,21 @@ type GetMergeRequestsCommentsResponse = struct {
 	Resolved  bool   `json:"resolved"`
 }
 
-func GetMRComments(mrId string) ([]table.Row, error) {
-	// url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.Config.BaseUrl, config.Config.ApiVersion, config.Config.ProjectsId.PlanningTool, mrId)
-	// token := config.Config.ApiToken
-	// mrUrlParams := []string{"order_by=updated_at"}
-	// params := "?" + strings.Join(mrUrlParams, "&")
+func GetMergeRequestComments(mrID string) ([]table.Row, error) {
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.Config.BaseUrl, config.Config.ApiVersion, config.Config.ProjectsId.PlanningTool, mrID)
+	token := config.Config.ApiToken
+	mrURLParams := []string{"order_by=updated_at"}
+	params := "?" + strings.Join(mrURLParams, "&")
 
-	// responseData, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
-	responseData, err := os.ReadFile("comments.json")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	responseData, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
+	if err != nil {
+		logger.Error(err)
+	}
 
 	var r []GetMergeRequestsCommentsResponse
-	// if err := json.Unmarshal(responseData, &r); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	err = json.Unmarshal(responseData, &r)
+	if err = json.Unmarshal(responseData, &r); err != nil {
+		logger.Error(err)
+	}
 
 	// transforms response interface to match table Row
 	var rows []table.Row
@@ -100,7 +97,7 @@ func GetMRComments(mrId string) ([]table.Row, error) {
 			UpdatedAt, _, _ := strings.Cut(item.UpdatedAt, "T")
 
 			n := table.Row{
-				strconv.Itoa(item.Id),
+				strconv.Itoa(item.ID),
 				item.Type,
 				item.Author.Name,
 				createdAt,

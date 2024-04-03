@@ -1,24 +1,24 @@
 package tui
 
 import (
-	"gitlab_tui/api"
+	"gitlab_tui/internal/server"
 
 	"github.com/charmbracelet/bubbles/table"
 )
 
 const (
-	mergeReqsIdIdx tableColIndex = iota
+	mergeReqsIDIdx tableColIndex = iota
 	mergeReqsTitleIdx
 	mergeReqsAuthorIdx
 	mergeReqsStatusIdx
 	mergeReqsDraftIdx
 	mergeReqsConflictsIdx
-	mergeReqsUrlIdx
+	mergeReqsURLIdx
 	mergeReqsDescIdx
 )
 
 const (
-	commentsIdIdx tableColIndex = iota
+	commentsIDIdx tableColIndex = iota
 	commentsTypeIdx
 	commentsAuthorIdx
 	commentsCreatedAtIdx
@@ -34,7 +34,8 @@ type MergeRequestsModel struct {
 }
 
 func SetMergeRequestsListModel() table.Model {
-	r := api.GetMergeRequests()
+	r := server.GetMergeRequestsMock()
+	// r := server.GetMergeRequests()
 
 	columns := []table.Column{
 		{Title: "Iid", Width: 4},

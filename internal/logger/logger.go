@@ -1,7 +1,8 @@
-package customlog
+package logger
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -9,11 +10,11 @@ import (
 
 // Logs to debug.log file
 //
-//	logToFile("log", func() {
+//	logger.Debug("log", func() {
 //		log.Println(strconv.Itoa(msg.Width))
 //		log.Println("tw " + strconv.Itoa(m.table.Width()))
 //	})
-func ToFile(logPrefix string, cb func()) {
+func Debug(logPrefix string, cb func()) {
 	f, err := tea.LogToFile("debug.log", logPrefix)
 	if err != nil {
 		fmt.Println("fatal:", err)
@@ -21,4 +22,13 @@ func ToFile(logPrefix string, cb func()) {
 	}
 	defer f.Close()
 	cb()
+}
+
+func Error(error error) {
+	f, err := tea.LogToFile(".log", "Error")
+	if err != nil {
+		log.Fatal("Opening error ", err)
+	}
+	defer f.Close()
+	log.Fatal(error)
 }

@@ -2,9 +2,9 @@ package tui
 
 import (
 	"fmt"
-	"gitlab_tui/api"
-	"gitlab_tui/command"
-	"gitlab_tui/internal/customlog"
+	"gitlab_tui/internal/exec"
+	"gitlab_tui/internal/logger"
+	"gitlab_tui/internal/server"
 	"gitlab_tui/internal/style"
 	"log"
 
@@ -61,8 +61,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case MrTableView:
 			switch msg.String() {
 			case "x":
-				selectedUrl := m.MergeRequests.List.SelectedRow()[mergeReqsUrlIdx]
-				command.Openbrowser(selectedUrl)
+				selectedURL := m.MergeRequests.List.SelectedRow()[mergeReqsURLIdx]
+				exec.Openbrowser(selectedURL)
 
 			case "enter":
 				content := string(m.MergeRequests.List.SelectedRow()[mergeReqsDescIdx])
@@ -70,9 +70,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.CurrView = MdView
 
 			case "c":
-				m.MergeRequests.SelectedMr = m.MergeRequests.List.SelectedRow()[mergeReqsIdIdx]
+				m.MergeRequests.SelectedMr = m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx]
 				c := func() tea.Msg {
-					r, err := api.GetMRComments(m.MergeRequests.List.SelectedRow()[mergeReqsIdIdx])
+					r, err := server.GetMergeRequestCommentsMock(m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx])
+					// r, err := server.GetMergeRequestComments(m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx])
 					if err != nil {
 						return err
 					}
@@ -86,8 +87,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case CommentsTableView:
 			switch msg.String() {
 			case "x":
-				selectedUrl := m.MergeRequests.Comments.SelectedRow()[mergeReqsUrlIdx]
-				command.Openbrowser(selectedUrl)
+				selectedURL := m.MergeRequests.Comments.SelectedRow()[mergeReqsURLIdx]
+				exec.Openbrowser(selectedURL)
 
 			case "enter":
 				content := string(m.MergeRequests.Comments.SelectedRow()[commentsBodyIdx])
@@ -126,7 +127,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, cmd)
 		}
 
-	case api.MrCommentsQueryResponse:
+	case server.MrCommentsQueryResponse:
 		m.MergeRequests.Comments = SetMergeRequestsCommentsModel(msg)
 		m.MergeRequests.Comments.SetStyles(style.Table)
 		m.CurrView = CommentsTableView
@@ -137,7 +138,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, isRespReady)
 
 	case error:
-		customlog.ToFile("error", func() {
+		logger.Debug("error", func() {
 			log.Println(msg)
 		})
 
