@@ -10,6 +10,8 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 )
 
+type MrCommentsQueryResponse = []table.Row
+
 type GetMergeRequestsResponse = struct {
 	Id     int    `json:"iid"`
 	Title  string `json:"title"`
@@ -111,5 +113,5 @@ func GetMRComments(mrId string) ([]table.Row, error) {
 		}
 	}
 
-	return rows, err
+	return MrCommentsQueryResponse(rows), err
 }

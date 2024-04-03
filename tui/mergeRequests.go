@@ -1,4 +1,4 @@
-package main
+package tui
 
 import (
 	"gitlab_tui/api"
@@ -27,13 +27,13 @@ const (
 	commentsBodyIdx
 )
 
-type mergeRequests struct {
-	list       table.Model
-	comments   table.Model
-	selectedMr string
+type MergeRequestsModel struct {
+	List       table.Model
+	Comments   table.Model
+	SelectedMr string
 }
 
-func setMergeRequestsListModel() table.Model {
+func SetMergeRequestsListModel() table.Model {
 	r := api.GetMergeRequests()
 
 	columns := []table.Column{
@@ -57,7 +57,7 @@ func setMergeRequestsListModel() table.Model {
 	return t
 }
 
-func setMergeRequestsCommentsModel(msg []table.Row) table.Model {
+func SetMergeRequestsCommentsModel(msg []table.Row) table.Model {
 	columns := []table.Column{
 		{Title: "Id", Width: 10},
 		{Title: "Type", Width: 20},
