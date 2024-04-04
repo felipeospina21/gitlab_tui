@@ -10,15 +10,17 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 )
 
-func GetMergeRequestsMock() []table.Row {
+func GetMergeRequestsMock() ([]table.Row, error) {
 	responseData, err := os.ReadFile("planning_mr.json")
 	if err != nil {
 		logger.Error(err)
+		return nil, err
 	}
 
 	var r []GetMergeRequestsResponse
 	if err := json.Unmarshal(responseData, &r); err != nil {
 		logger.Error(err)
+		return nil, err
 	}
 
 	// transforms response interface to match table Row
@@ -37,18 +39,20 @@ func GetMergeRequestsMock() []table.Row {
 		rows = append(rows, n)
 	}
 
-	return rows
+	return rows, nil
 }
 
 func GetMergeRequestCommentsMock(mrID string) ([]table.Row, error) {
 	responseData, err := os.ReadFile("comments.json")
 	if err != nil {
 		logger.Error(err)
+		return nil, err
 	}
 
 	var r []GetMergeRequestsCommentsResponse
 	if err = json.Unmarshal(responseData, &r); err != nil {
 		logger.Error(err)
+		return nil, err
 	}
 
 	// transforms response interface to match table Row
@@ -72,5 +76,5 @@ func GetMergeRequestCommentsMock(mrID string) ([]table.Row, error) {
 		}
 	}
 
-	return MrCommentsQueryResponse(rows), err
+	return MrCommentsQueryResponse(rows), nil
 }

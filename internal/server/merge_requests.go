@@ -26,7 +26,7 @@ type GetMergeRequestsResponse = struct {
 	IsDraft      bool   `json:"draft"`
 }
 
-func GetMergeRequests() []table.Row {
+func GetMergeRequests() ([]table.Row, error) {
 	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests", config.Config.BaseUrl, config.Config.ApiVersion, config.Config.ProjectsId.PlanningTool)
 	token := config.Config.ApiToken
 	mrURLParams := []string{"state=opened"}
@@ -35,11 +35,13 @@ func GetMergeRequests() []table.Row {
 	responseData, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
 	if err != nil {
 		logger.Error(err)
+		return nil, err
 	}
 
 	var r []GetMergeRequestsResponse
 	if err := json.Unmarshal(responseData, &r); err != nil {
 		logger.Error(err)
+		return nil, err
 	}
 
 	// transforms response interface to match table Row
@@ -58,7 +60,7 @@ func GetMergeRequests() []table.Row {
 		rows = append(rows, n)
 	}
 
-	return rows
+	return rows, nil
 }
 
 type GetMergeRequestsCommentsResponse = struct {
@@ -82,11 +84,13 @@ func GetMergeRequestComments(mrID string) ([]table.Row, error) {
 	responseData, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
 	if err != nil {
 		logger.Error(err)
+		return nil, err
 	}
 
 	var r []GetMergeRequestsCommentsResponse
 	if err = json.Unmarshal(responseData, &r); err != nil {
 		logger.Error(err)
+		return nil, err
 	}
 
 	// transforms response interface to match table Row
@@ -110,5 +114,5 @@ func GetMergeRequestComments(mrID string) ([]table.Row, error) {
 		}
 	}
 
-	return MrCommentsQueryResponse(rows), err
+	return MrCommentsQueryResponse(rows), nil
 }

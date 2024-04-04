@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"gitlab_tui/internal/server"
+	"gitlab_tui/internal/style"
 
 	"github.com/charmbracelet/bubbles/table"
 )
@@ -28,23 +28,48 @@ const (
 )
 
 type MergeRequestsModel struct {
-	List       table.Model
-	Comments   table.Model
-	SelectedMr string
+	List     table.Model
+	Comments table.Model
+	Error    error
 }
 
-func SetMergeRequestsListModel() table.Model {
-	r := server.GetMergeRequestsMock()
-	// r := server.GetMergeRequests()
+func (m Model) UpdateMergeRequestsModel(listModel table.Model, commentsModel table.Model) Model {
+	listModel.SetStyles(style.Table)
+	commentsModel.SetStyles(style.Table)
+
+	newM := Model{
+		MergeRequests: MergeRequestsModel{List: listModel, Comments: commentsModel},
+		CurrView:      m.CurrView,
+		Md:            m.Md,
+	}
+
+	return newM
+}
+
+func InitMergeRequestsListTable(r []table.Row, width int) table.Model {
+	id := int(float32(width) * 0.06)
+	title := int(float32(width) * 0.5)
+	author := int(float32(width) * 0.1)
+	status := int(float32(width) * 0.20)
+	draft := int(float32(width) * 0.06)
+	conf := int(float32(width) * 0.06)
+	url := 0
+
+	if width > 170 {
+		id = int(float32(width) * 0.03)
+		title = int(float32(width) * 0.4)
+		status = int(float32(width) * 0.1)
+		url = int(float32(width) * 0.24)
+	}
 
 	columns := []table.Column{
-		{Title: "Iid", Width: 4},
-		{Title: "Title", Width: 80},
-		{Title: "Author", Width: 20},
-		{Title: "Status", Width: 30},
-		{Title: "Draft", Width: 10},
-		{Title: "Conflicts", Width: 10},
-		{Title: "Url", Width: 0},
+		{Title: "Iid", Width: id},
+		{Title: "Title", Width: title},
+		{Title: "Author", Width: author},
+		{Title: "Status", Width: status},
+		{Title: "Draft", Width: draft},
+		{Title: "Conflicts", Width: conf},
+		{Title: "Url", Width: url},
 		{Title: "Description", Width: 0},
 	}
 

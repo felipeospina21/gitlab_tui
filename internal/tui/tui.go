@@ -8,12 +8,14 @@ import (
 	"gitlab_tui/internal/style"
 	"log"
 
+	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
 type (
-	currView      uint
+	views         uint
 	tableColIndex uint
 )
 
@@ -21,11 +23,12 @@ type Model struct {
 	Tabs          TabsModel
 	MergeRequests MergeRequestsModel
 	Md            MdModel
-	CurrView      currView
+	CurrView      views
+	PrevView      views
 }
 
 const (
-	MrTableView currView = iota
+	MrTableView views = iota
 	MdView
 	CommentsTableView
 	TabsView
@@ -60,6 +63,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch m.CurrView {
 		case MrTableView:
 			switch msg.String() {
+			case "r":
+				r, err := server.GetMergeRequestsMock()
+				// TODO: Do something with Error msg
+				// TODO: Create enum for queries status
+				if err != nil {
+					return m, func() tea.Msg {
+						return "fetch_mr_table_error"
+					}
+				}
+
+				t := InitMergeRequestsListTable(r, 155)
+				newM := m.UpdateMergeRequestsModel(t, table.Model{})
+
+				return newM, func() tea.Msg {
+					return "fetch_mr_table_success"
+				}
+
 			case "x":
 				selectedURL := m.MergeRequests.List.SelectedRow()[mergeReqsURLIdx]
 				exec.Openbrowser(selectedURL)
@@ -67,10 +87,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "enter":
 				content := string(m.MergeRequests.List.SelectedRow()[mergeReqsDescIdx])
 				m.setResponseContent(content)
+				m.PrevView = MrTableView
 				m.CurrView = MdView
 
 			case "c":
-				m.MergeRequests.SelectedMr = m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx]
 				c := func() tea.Msg {
 					r, err := server.GetMergeRequestCommentsMock(m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx])
 					// r, err := server.GetMergeRequestComments(m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx])
@@ -86,6 +106,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case CommentsTableView:
 			switch msg.String() {
+			case "r":
+				r, err := server.GetMergeRequestCommentsMock(m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx])
+				// TODO: Do something with Error msg
+				// TODO: Create enum for queries status
+				if err != nil {
+					return m, func() tea.Msg {
+						return "fetch_mr_table_error"
+					}
+				}
+				t := InitMergeRequestsListTable(r, 155)
+				newM := m.UpdateMergeRequestsModel(m.MergeRequests.List, t)
+
+				return newM, func() tea.Msg {
+					return "fetch_mr_table_success"
+				}
+
 			case "x":
 				selectedURL := m.MergeRequests.Comments.SelectedRow()[mergeReqsURLIdx]
 				exec.Openbrowser(selectedURL)
@@ -93,7 +129,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "enter":
 				content := string(m.MergeRequests.Comments.SelectedRow()[commentsBodyIdx])
 				m.setResponseContent(content)
+				m.PrevView = CommentsTableView
 				m.CurrView = MdView
+
+			case "backspace":
+				m.CurrView = MrTableView
+
 			}
 
 			m.MergeRequests.Comments, cmd = m.MergeRequests.Comments.Update(msg)
@@ -101,35 +142,62 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case MdView:
 			switch msg.String() {
 			case "backspace":
-				m.CurrView = MrTableView
+				m.CurrView = m.PrevView
 			}
 
 			m.Md.Viewport, cmd = m.Md.Viewport.Update(msg)
 		}
 
 	case tea.WindowSizeMsg:
-		// NOTE: Resize tabs width
-		// numTabs := len(m.tabs.Tabs)
-		// x := msg.Width
-		// a := x / numTabs
-		// inactiveTabStyle.Width(a - docStyle.GetHorizontalPadding())
-		// activeTabStyle.Width(a - docStyle.GetHorizontalPadding())
-
-		m.MergeRequests.List.SetWidth(msg.Width)
-		m.MergeRequests.Comments.SetWidth(msg.Width)
-		// m.table.SetHeight(msg.Height)
-		headerHeight := lipgloss.Height(m.headerView(m.MergeRequests.List.SelectedRow()[mergeReqsTitleIdx]))
-		footerHeight := lipgloss.Height(m.footerView())
-		verticalMarginHeight := headerHeight + footerHeight
-		cmd = m.setViewportViewSize(msg, headerHeight, verticalMarginHeight)
-
+		cmd = m.setViewportViewSize(msg)
 		if cmd != nil {
 			cmds = append(cmds, cmd)
+		}
+
+		switch m.CurrView {
+		case MrTableView:
+			m.MergeRequests.List.SetWidth(msg.Width)
+			t := InitMergeRequestsListTable(m.MergeRequests.List.Rows(), msg.Width-10)
+			newM := m.UpdateMergeRequestsModel(t, table.Model{})
+
+			return newM, func() tea.Msg {
+				return tea.ClearScreen()
+			}
+
+		case CommentsTableView:
+			m.MergeRequests.Comments.SetWidth(msg.Width)
+			t := InitMergeRequestsListTable(m.MergeRequests.Comments.Rows(), msg.Width-10)
+			newM := m.UpdateMergeRequestsModel(m.MergeRequests.List, t)
+
+			return newM, func() tea.Msg {
+				return tea.ClearScreen()
+			}
+
+		case MdView:
+			headerHeight := lipgloss.Height(m.headerView(m.MergeRequests.List.SelectedRow()[mergeReqsTitleIdx]))
+			footerHeight := lipgloss.Height(m.footerView())
+			verticalMarginHeight := headerHeight + footerHeight
+			m.Md.Viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
+
+			var content string
+			switch m.PrevView {
+			case MrTableView:
+				content = string(m.MergeRequests.List.SelectedRow()[mergeReqsDescIdx])
+
+			case CommentsTableView:
+				content = string(m.MergeRequests.Comments.SelectedRow()[commentsBodyIdx])
+
+			default:
+				content = string(m.MergeRequests.List.SelectedRow()[mergeReqsDescIdx])
+			}
+			m.setResponseContent(content)
+
 		}
 
 	case server.MrCommentsQueryResponse:
 		m.MergeRequests.Comments = SetMergeRequestsCommentsModel(msg)
 		m.MergeRequests.Comments.SetStyles(style.Table)
+		m.PrevView = MrTableView
 		m.CurrView = CommentsTableView
 
 		isRespReady := func() tea.Msg {

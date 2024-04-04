@@ -46,8 +46,11 @@ func (m *Model) setResponseContent(content string) {
 	m.Md.Viewport.SetContent(styledContent)
 }
 
-func (m *Model) setViewportViewSize(msg tea.WindowSizeMsg, headerHeight int, verticalMarginHeight int) tea.Cmd {
+func (m *Model) setViewportViewSize(msg tea.WindowSizeMsg) tea.Cmd {
 	w := msg.Width
+	headerHeight := lipgloss.Height(m.headerView(m.MergeRequests.List.SelectedRow()[mergeReqsTitleIdx]))
+	footerHeight := lipgloss.Height(m.footerView())
+	verticalMarginHeight := headerHeight + footerHeight
 
 	if !m.Md.Ready {
 		// Since this program is using the full size of the viewport we
