@@ -28,17 +28,19 @@ const (
 )
 
 type MergeRequestsModel struct {
-	List     table.Model
-	Comments table.Model
-	Error    error
+	List       table.Model
+	Comments   table.Model
+	Pipeline   table.Model
+	SelectedMr string
+	Error      error
 }
 
-func (m Model) UpdateMergeRequestsModel(listModel table.Model, commentsModel table.Model) Model {
+func (m Model) UpdateMergeRequestsModel(listModel table.Model, commentsModel table.Model, pipelinesModel table.Model) Model {
 	listModel.SetStyles(style.Table)
 	commentsModel.SetStyles(style.Table)
 
 	newM := Model{
-		MergeRequests: MergeRequestsModel{List: listModel, Comments: commentsModel},
+		MergeRequests: MergeRequestsModel{List: listModel, Comments: commentsModel, Pipeline: pipelinesModel},
 		CurrView:      m.CurrView,
 		Md:            m.Md,
 	}
@@ -92,6 +94,26 @@ func SetMergeRequestsCommentsModel(msg []table.Row) table.Model {
 		{Title: "Updated At", Width: 30},
 		{Title: "Resolved", Width: 10},
 		{Title: "Body", Width: 0},
+	}
+	t := table.New(
+		table.WithColumns(columns),
+		table.WithRows(msg),
+		table.WithFocused(true),
+		table.WithHeight(len(msg)),
+	)
+
+	return t
+}
+
+func SetMergeRequestPipelinesModel(msg []table.Row) table.Model {
+	columns := []table.Column{
+		{Title: "ID", Width: 10},
+		{Title: "IID", Width: 20},
+		{Title: "Status", Width: 20},
+		{Title: "Source", Width: 20},
+		{Title: "Created At", Width: 30},
+		{Title: "Updated At", Width: 30},
+		{Title: "URL", Width: 0},
 	}
 	t := table.New(
 		table.WithColumns(columns),
