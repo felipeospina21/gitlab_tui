@@ -2,14 +2,10 @@ package tui
 
 import (
 	"fmt"
-	"gitlab_tui/internal/exec"
 	"gitlab_tui/internal/logger"
-	"gitlab_tui/internal/server"
 	"gitlab_tui/internal/style"
 	"log"
 
-	"github.com/charmbracelet/bubbles/table"
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -20,7 +16,6 @@ type (
 )
 
 type Model struct {
-	Tabs          TabsModel
 	MergeRequests MergeRequestsModel
 	Md            MdModel
 	CurrView      views
@@ -66,52 +61,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case MrTableView:
 			switch msg.String() {
 			case "r":
-				r, err := server.GetMergeRequestsMock()
-				// TODO: Do something with Error msg
-				// TODO: Create enum for queries status
-				if err != nil {
-					return m, func() tea.Msg {
-						return "fetch_mr_table_error"
-					}
-				}
-
-				t := InitMergeRequestsListTable(r, 155)
-				newM := m.UpdateMergeRequestsModel(t, table.Model{}, table.Model{})
-
-				return newM, func() tea.Msg {
-					return "fetch_mr_table_success"
-				}
+				return m.refetchMrList()
 
 			case "x":
-				selectedURL := m.MergeRequests.List.SelectedRow()[mergeReqsURLIdx]
-				exec.Openbrowser(selectedURL)
+				m.navigateToMr()
 
 			case "enter":
-				content := string(m.MergeRequests.List.SelectedRow()[mergeReqsDescIdx])
-				m.setResponseContent(content)
-				m.PrevView = MrTableView
-				m.CurrView = MdView
+				m.viewDescription()
 
 			case "c":
-				c := func() tea.Msg {
-					r, err := server.GetMergeRequestCommentsMock(m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx])
-					// r, err := server.GetMergeRequestComments(m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx])
-					if err != nil {
-						return err
-					}
-					return r
-				}
+				c := m.viewComments()
 				cmds = append(cmds, c)
 
 			case "p":
-				c := func() tea.Msg {
-					r, err := server.GetMergeRequestPipelinesMock(m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx])
-					if err != nil {
-						return err
-					}
-					return r
-				}
-
+				c := m.viewPipelines()
 				cmds = append(cmds, c)
 			}
 
@@ -120,30 +83,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case MrCommentsView:
 			switch msg.String() {
 			case "r":
-				r, err := server.GetMergeRequestCommentsMock(m.MergeRequests.List.SelectedRow()[mergeReqsIDIdx])
-				// TODO: Do something with Error msg
-				// TODO: Create enum for queries status
-				if err != nil {
-					return m, func() tea.Msg {
-						return "fetch_mr_table_error"
-					}
-				}
-				t := InitMergeRequestsListTable(r, 155)
-				newM := m.UpdateMergeRequestsModel(m.MergeRequests.List, t, m.MergeRequests.Pipeline)
-
-				return newM, func() tea.Msg {
-					return "fetch_mr_table_success"
-				}
+				return m.refetchComments()
 
 			case "x":
-				selectedURL := m.MergeRequests.Comments.SelectedRow()[mergeReqsURLIdx]
-				exec.Openbrowser(selectedURL)
+				m.navigateToMrComment()
 
 			case "enter":
-				content := string(m.MergeRequests.Comments.SelectedRow()[commentsBodyIdx])
-				m.setResponseContent(content)
-				m.PrevView = MrCommentsView
-				m.CurrView = MdView
+				m.viewCommentContent()
 
 			case "backspace":
 				m.CurrView = MrTableView
@@ -151,6 +97,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.MergeRequests.Comments, cmd = m.MergeRequests.Comments.Update(msg)
+
+		case MrPipelinesView:
+			switch msg.String() {
+			case "r":
+				return m.refetchPipelines()
+
+			case "x":
+				m.navigateToPipeline()
+
+			case "backspace":
+				m.CurrView = MrTableView
+
+			}
+
+			m.MergeRequests.Pipeline, cmd = m.MergeRequests.Pipeline.Update(msg)
 
 		case MdView:
 			switch msg.String() {
@@ -169,76 +130,30 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch m.CurrView {
 		case MrTableView:
-			m.MergeRequests.List.SetWidth(msg.Width)
-			t := InitMergeRequestsListTable(m.MergeRequests.List.Rows(), msg.Width-10)
-			newM := m.UpdateMergeRequestsModel(t, table.Model{}, table.Model{})
-
-			return newM, func() tea.Msg {
-				return tea.ClearScreen()
-			}
+			return m.resizeMrTable(msg)
 
 		case MrCommentsView:
-			m.MergeRequests.Comments.SetWidth(msg.Width)
-			t := InitMergeRequestsListTable(m.MergeRequests.Comments.Rows(), msg.Width-10)
-			newM := m.UpdateMergeRequestsModel(m.MergeRequests.List, t, m.MergeRequests.Pipeline)
-
-			return newM, func() tea.Msg {
-				return tea.ClearScreen()
-			}
+			return m.resizeMrCommentsTable(msg)
 
 		case MrPipelinesView:
-			m.MergeRequests.Pipeline.SetWidth(msg.Width)
-			t := InitMergeRequestsListTable(m.MergeRequests.Pipeline.Rows(), msg.Width-10)
-			newM := m.UpdateMergeRequestsModel(m.MergeRequests.List, m.MergeRequests.Comments, t)
-
-			return newM, func() tea.Msg {
-				return tea.ClearScreen()
-			}
+			return m.resizeMrPipelinesTable(msg)
 
 		case MdView:
-			headerHeight := lipgloss.Height(m.headerView(m.MergeRequests.List.SelectedRow()[mergeReqsTitleIdx]))
-			footerHeight := lipgloss.Height(m.footerView())
-			verticalMarginHeight := headerHeight + footerHeight
-			m.Md.Viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
-
-			var content string
-			switch m.PrevView {
-			case MrTableView:
-				content = string(m.MergeRequests.List.SelectedRow()[mergeReqsDescIdx])
-
-			case MrCommentsView:
-				content = string(m.MergeRequests.Comments.SelectedRow()[commentsBodyIdx])
-
-			default:
-				content = string(m.MergeRequests.List.SelectedRow()[mergeReqsDescIdx])
-			}
-			m.setResponseContent(content)
+			m.resizeMdView(msg)
 
 		}
 
-	case server.MrCommentsQueryResponse:
-		m.MergeRequests.Comments = SetMergeRequestsCommentsModel(msg)
-		m.MergeRequests.Comments.SetStyles(style.Table)
-		m.MergeRequests.SelectedMr = m.MergeRequests.List.SelectedRow()[mergeReqsTitleIdx]
-		m.PrevView = MrTableView
-		m.CurrView = MrCommentsView
-
-		isRespReady := func() tea.Msg {
-			return "comments"
+	case string:
+		if msg == "success_comments" {
+			m.MergeRequests.Comments.SetStyles(style.Table)
+			m.CurrView = MrCommentsView
+			m.setSelectedMr()
 		}
-		cmds = append(cmds, isRespReady)
-
-	case *server.MrPipelinesQueryResponse:
-		m.MergeRequests.Pipeline = SetMergeRequestPipelinesModel(*msg)
-		// m.Title = "Pipelines"
-		// // m.MergeRequests.Pipeline.SetStyles(style.Table)
-		// // m.MergeRequests.SelectedMr = m.MergeRequests.List.SelectedRow()[mergeReqsTitleIdx]
-		// // m.PrevView = MrTableView
-		// // m.CurrView = MrPipelinesView
-		// isRespReady := func() tea.Msg {
-		// 	return "pipeline"
-		// }
-		// cmds = append(cmds, isRespReady)
+		if msg == "success_pipelines" {
+			m.MergeRequests.Pipeline.SetStyles(style.Table)
+			m.CurrView = MrPipelinesView
+			m.setSelectedMr()
+		}
 
 	case error:
 		logger.Debug("error", func() {
@@ -261,9 +176,6 @@ func (m Model) View() string {
 	case MrPipelinesView:
 		return m.renderTableView(m.MergeRequests.Pipeline.View(), "Pipelines")
 
-	case TabsView:
-		return m.TabsView()
-
 	default:
 		return m.renderTableView(m.MergeRequests.List.View(), "")
 
@@ -277,12 +189,28 @@ func (m Model) renderTableView(view string, title string) string {
 	if title == "" {
 		t = "Merge Requests"
 	} else {
-		t = fmt.Sprintf("Merge Request %s / %s", m.Title, m.MergeRequests.SelectedMr)
-		// if m.CurrView == MrCommentsView {
-		// 	t = fmt.Sprintf("Merge Request Comments / %s", m.MergeRequests.SelectedMr)
-		// } else {
-		// 	t = fmt.Sprintf("Merge Request Pipelines / %s", m.MergeRequests.SelectedMr)
-		// }
+		t = fmt.Sprintf("Merge Request %s | %s", title, m.MergeRequests.SelectedMr)
 	}
 	return lipgloss.JoinVertical(0, titleStyle.Render(t), style.Base.Render(view)+"\n")
+}
+
+func (m Model) getSelectedMrRow(idx tableColIndex, view views) string {
+	switch view {
+	case MrTableView:
+		return m.MergeRequests.List.SelectedRow()[idx]
+
+	case MrCommentsView:
+		return m.MergeRequests.Comments.SelectedRow()[idx]
+
+	case MrPipelinesView:
+		return m.MergeRequests.Pipeline.SelectedRow()[idx]
+
+	default:
+		return ""
+
+	}
+}
+
+func (m *Model) setSelectedMr() {
+	m.MergeRequests.SelectedMr = m.getSelectedMrRow(mergeReqsTitleIdx, MrTableView)
 }

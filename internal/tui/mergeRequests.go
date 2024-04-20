@@ -27,6 +27,16 @@ const (
 	commentsBodyIdx
 )
 
+const (
+	mrPipelinesIDIdx tableColIndex = iota
+	mrPipelinesIIDIdx
+	mrPipelinesStatusIdx
+	mrPipelinesSourceIdx
+	mrPipelinesCreatedAtIdx
+	mrPipelinesUpdatedAtIdx
+	mrPipelinesURLIdx
+)
+
 type MergeRequestsModel struct {
 	List       table.Model
 	Comments   table.Model
@@ -80,6 +90,7 @@ func InitMergeRequestsListTable(r []table.Row, width int) table.Model {
 		table.WithRows(r),
 		table.WithFocused(true),
 		table.WithHeight(len(r)),
+		table.WithStyles(style.Table),
 	)
 
 	return t

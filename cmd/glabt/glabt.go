@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"gitlab_tui/config"
 	"gitlab_tui/internal/server"
-	"gitlab_tui/internal/style"
 	"gitlab_tui/internal/tui"
 	"os"
 
@@ -28,11 +27,9 @@ func main() {
 }
 
 func InitModel() (tui.Model, error) {
-	r, err := server.GetMergeRequestsMock()
-	// r := server.GetMergeRequests()
+	r, err := server.GetMergeRequests()
 
 	t := tui.InitMergeRequestsListTable(r, 155)
-	t.SetStyles(style.Table)
 
 	newM := tui.Model{
 		MergeRequests: tui.MergeRequestsModel{List: t},

@@ -8,14 +8,14 @@ import (
 
 type envVars = map[string]string
 
-type projectsId struct {
+type projectsID struct {
 	PlanningTool string
 }
 type config struct {
-	BaseUrl    string
-	ApiToken   string
-	ApiVersion string
-	ProjectsId projectsId
+	BaseURL    string
+	APIToken   string
+	APIVersion string
+	ProjectsID projectsID
 }
 
 var Config config
@@ -23,10 +23,10 @@ var Config config
 func Load(configObj *config) {
 	ev := readEnvVars()
 
-	configObj.ApiVersion = "v4"
-	configObj.BaseUrl = ev["BASE_URL"]
-	configObj.ApiToken = ev["TOKEN"]
-	configObj.ProjectsId = projectsId{
+	configObj.APIVersion = "v4"
+	configObj.BaseURL = ev["BASE_URL"]
+	configObj.APIToken = ev["TOKEN"]
+	configObj.ProjectsID = projectsID{
 		PlanningTool: ev["PLANNING_TOOL_ID"],
 	}
 }

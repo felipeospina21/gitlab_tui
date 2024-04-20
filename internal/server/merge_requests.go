@@ -30,8 +30,8 @@ type GetMergeRequestsResponse = struct {
 }
 
 func GetMergeRequests() ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests", config.Config.BaseUrl, config.Config.ApiVersion, config.Config.ProjectsId.PlanningTool)
-	token := config.Config.ApiToken
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests", config.Config.BaseURL, config.Config.APIVersion, config.Config.ProjectsID.PlanningTool)
+	token := config.Config.APIToken
 	mrURLParams := []string{"state=opened"}
 	params := "?" + strings.Join(mrURLParams, "&")
 
@@ -55,8 +55,8 @@ func GetMergeRequests() ([]table.Row, error) {
 			item.Title,
 			item.Author.Name,
 			item.MergeStatus,
-			strconv.FormatBool(item.IsDraft),
-			strconv.FormatBool(item.HasConflicts),
+			renderIcon(item.IsDraft),
+			renderIcon(item.HasConflicts),
 			item.URL,
 			item.Desc,
 		}
@@ -64,6 +64,15 @@ func GetMergeRequests() ([]table.Row, error) {
 	}
 
 	return rows, nil
+}
+
+func renderIcon(b bool) string {
+	icon := ""
+	if b {
+		icon = " "
+	}
+
+	return icon
 }
 
 type GetMergeRequestCommentsResponse = struct {
@@ -79,8 +88,8 @@ type GetMergeRequestCommentsResponse = struct {
 }
 
 func GetMergeRequestComments(mrID string) ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.Config.BaseUrl, config.Config.ApiVersion, config.Config.ProjectsId.PlanningTool, mrID)
-	token := config.Config.ApiToken
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.Config.BaseURL, config.Config.APIVersion, config.Config.ProjectsID.PlanningTool, mrID)
+	token := config.Config.APIToken
 	mrURLParams := []string{"order_by=updated_at"}
 	params := "?" + strings.Join(mrURLParams, "&")
 
@@ -131,8 +140,8 @@ type GetMergeRequestPipelinesResponse = struct {
 }
 
 func GetMergeRequestPipelines(mrID string) ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/pipelines", config.Config.BaseUrl, config.Config.ApiVersion, config.Config.ProjectsId.PlanningTool, mrID)
-	token := config.Config.ApiToken
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/pipelines", config.Config.BaseURL, config.Config.APIVersion, config.Config.ProjectsID.PlanningTool, mrID)
+	token := config.Config.APIToken
 
 	responseData, err := fetchData(url, fetchConfig{method: "GET", params: "", token: token})
 	if err != nil {
