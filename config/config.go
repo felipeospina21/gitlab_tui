@@ -1,41 +1,39 @@
 package config
 
 import (
-	"log"
+	"fmt"
 
-	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
-type envVars = map[string]string
-
-type projectsID struct {
-	PlanningTool string
+type ProjectsID struct {
+	PlanningTool string `mapstructure:"planning_tool_id"`
 }
+
 type config struct {
-	BaseURL    string
-	APIToken   string
-	APIVersion string
-	ProjectsID projectsID
+	BaseURL    string `mapstructure:"base_url"`
+	APIToken   string `mapstructure:"token"`
+	APIVersion string `mapstructure:"api_version"`
+	ProjectsID `mapstructure:",squash"`
 }
 
 var Config config
 
 func Load(configObj *config) {
-	ev := readEnvVars()
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
 
-	configObj.APIVersion = "v4"
-	configObj.BaseURL = ev["BASE_URL"]
-	configObj.APIToken = ev["TOKEN"]
-	configObj.ProjectsID = projectsID{
-		PlanningTool: ev["PLANNING_TOOL_ID"],
-	}
-}
+	viper.AddConfigPath("$HOME/.config/glabt/")
+	viper.AddConfigPath("$HOME")
+	viper.AddConfigPath(".")
 
-func readEnvVars() envVars {
-	var m envVars
-	m, err := godotenv.Read()
+	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatal("Error reading env")
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
-	return m
+
+	err = viper.Unmarshal(&Config)
+	if err != nil {
+		panic(fmt.Errorf("fatal error unmarshal: %w", err))
+	}
 }

@@ -23,10 +23,11 @@ type GetMergeRequestsResponse = struct {
 	Author struct {
 		Name string `json:"name"`
 	}
-	MergeStatus  string `json:"merge_status"`
-	URL          string `json:"web_url"`
-	HasConflicts bool   `json:"has_conflicts"`
-	IsDraft      bool   `json:"draft"`
+	MergeStatus         string `json:"merge_status"`
+	DetailedMergeStatus string `json:"detailed_merge_status"`
+	URL                 string `json:"web_url"`
+	HasConflicts        bool   `json:"has_conflicts"`
+	IsDraft             bool   `json:"draft"`
 }
 
 func GetMergeRequests() ([]table.Row, error) {
@@ -55,6 +56,7 @@ func GetMergeRequests() ([]table.Row, error) {
 			item.Title,
 			item.Author.Name,
 			item.MergeStatus,
+			checkStatus(item.DetailedMergeStatus),
 			renderIcon(item.IsDraft),
 			renderIcon(item.HasConflicts),
 			item.URL,
@@ -64,6 +66,16 @@ func GetMergeRequests() ([]table.Row, error) {
 	}
 
 	return rows, nil
+}
+
+func checkStatus(status string) string {
+	s := map[string]string{
+		"not_approved": " ",
+		"unchecked":    " ",
+		"mergeable":    " ",
+		"checking":     " ",
+	}
+	return s[status]
 }
 
 func renderIcon(b bool) string {

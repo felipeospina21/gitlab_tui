@@ -60,18 +60,18 @@ func (m Model) UpdateMergeRequestsModel(listModel table.Model, commentsModel tab
 
 func InitMergeRequestsListTable(r []table.Row, width int) table.Model {
 	id := int(float32(width) * 0.06)
-	title := int(float32(width) * 0.5)
+	title := int(float32(width) * 0.45)
 	author := int(float32(width) * 0.1)
-	status := int(float32(width) * 0.20)
-	draft := int(float32(width) * 0.06)
-	conf := int(float32(width) * 0.06)
+	status := int(float32(width) * 0.13)
+	icon := int(float32(width) * 0.04)
 	url := 0
 
 	if width > 170 {
 		id = int(float32(width) * 0.03)
-		title = int(float32(width) * 0.4)
+		title = int(float32(width) * 0.35)
 		status = int(float32(width) * 0.1)
-		url = int(float32(width) * 0.24)
+		total := id + title + author + (status * 2) + (icon * 2)
+		url = width - total - 10
 	}
 
 	columns := []table.Column{
@@ -79,8 +79,9 @@ func InitMergeRequestsListTable(r []table.Row, width int) table.Model {
 		{Title: "Title", Width: title},
 		{Title: "Author", Width: author},
 		{Title: "Status", Width: status},
-		{Title: "Draft", Width: draft},
-		{Title: "Conflicts", Width: conf},
+		{Title: "Merge Status", Width: status},
+		{Title: "Draft", Width: icon},
+		{Title: "Conflicts", Width: icon},
 		{Title: "Url", Width: url},
 		{Title: "Description", Width: 0},
 	}
