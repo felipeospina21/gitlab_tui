@@ -21,6 +21,7 @@ type Model struct {
 	CurrView      views
 	PrevView      views
 	Title         string
+	Window        tea.WindowSizeMsg
 }
 
 const (
@@ -61,7 +62,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case MrTableView:
 			switch msg.String() {
 			case "r":
-				return m.refetchMrList()
+				m.refetchMrList()
 
 			case "x":
 				m.navigateToMr()
@@ -83,7 +84,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case MrCommentsView:
 			switch msg.String() {
 			case "r":
-				return m.refetchComments()
+				m.refetchComments()
 
 			case "x":
 				m.navigateToMrComment()
@@ -101,7 +102,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case MrPipelinesView:
 			switch msg.String() {
 			case "r":
-				return m.refetchPipelines()
+				m.refetchPipelines()
 
 			case "x":
 				m.navigateToPipeline()
@@ -123,6 +124,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.WindowSizeMsg:
+		m.Window = msg
+		logger.Debug("window", func() {
+			log.Print(m.Window)
+			log.Print(msg)
+		})
 		cmd = m.setViewportViewSize(msg)
 		if cmd != nil {
 			cmds = append(cmds, cmd)

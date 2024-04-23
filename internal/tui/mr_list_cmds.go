@@ -5,29 +5,16 @@ import (
 	"gitlab_tui/internal/logger"
 	"gitlab_tui/internal/server"
 
-	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m *Model) refetchMrList() (Model, tea.Cmd) {
+func (m *Model) refetchMrList() {
 	r, err := server.GetMergeRequests()
 	if err != nil {
 		logger.Error(err)
 	}
-	// TODO: Do something with Error msg
-	// TODO: Create enum for queries status
-	// if err != nil {
-	// 	return nil, func() tea.Msg {
-	// 		return "fetch_mr_table_error"
-	// 	}
-	// }
 
-	t := InitMergeRequestsListTable(r, 155)
-	newM := m.UpdateMergeRequestsModel(t, table.Model{}, table.Model{})
-
-	return newM, func() tea.Msg {
-		return nil
-	}
+	m.MergeRequests.List.SetRows(r)
 }
 
 func (m *Model) navigateToMr() {
