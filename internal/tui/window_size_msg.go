@@ -38,7 +38,7 @@ func (m *Model) resizeMrPipelinesTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 }
 
 func (m *Model) resizeMdView(msg tea.WindowSizeMsg) {
-	headerHeight := lipgloss.Height(m.headerView(m.getSelectedMrRow(mergeReqsTitleIdx, MrTableView)))
+	headerHeight := lipgloss.Height(m.headerView(m.getSelectedMrRow(mergeReqsCols.title.idx, MrTableView)))
 	footerHeight := lipgloss.Height(m.footerView())
 	verticalMarginHeight := headerHeight + footerHeight
 	m.Md.Viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
@@ -46,10 +46,10 @@ func (m *Model) resizeMdView(msg tea.WindowSizeMsg) {
 	var content string
 	switch m.PrevView {
 	case MrTableView:
-		content = m.getSelectedMrRow(mergeReqsDescIdx, MrTableView)
+		content = m.getSelectedMrRow(mergeReqsCols.desc.idx, MrTableView)
 
 	case MrCommentsView:
-		content = m.getSelectedMrRow(commentsBodyIdx, MrCommentsView)
+		content = m.getSelectedMrRow(commentsCols.body.idx, MrCommentsView)
 
 	default:
 		content = "Model not selected"

@@ -8,7 +8,7 @@ import (
 )
 
 func (m *Model) refetchComments() {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(mergeReqsIDIdx, MrTableView))
+	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView))
 	if err != nil {
 		logger.Error(err)
 	}
@@ -16,14 +16,14 @@ func (m *Model) refetchComments() {
 }
 
 func (m *Model) viewCommentContent() {
-	content := string(m.getSelectedMrRow(commentsBodyIdx, MrCommentsView))
+	content := string(m.getSelectedMrRow(commentsCols.body.idx, MrCommentsView))
 	m.setResponseContent(content)
 	m.PrevView = MrCommentsView
 	m.CurrView = MdView
 }
 
 func (m *Model) navigateToMrComment() {
-	selectedURL := m.getSelectedMrRow(mergeReqsURLIdx, MrTableView)
-	commentID := m.getSelectedMrRow(commentsIDIdx, MrCommentsView)
+	selectedURL := m.getSelectedMrRow(mergeReqsCols.url.idx, MrTableView)
+	commentID := m.getSelectedMrRow(commentsCols.id.idx, MrCommentsView)
 	exec.Openbrowser(fmt.Sprintf("%s#note_%s", selectedURL, commentID))
 }

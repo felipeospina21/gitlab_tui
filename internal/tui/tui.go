@@ -174,7 +174,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	switch m.CurrView {
 	case MdView:
-		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[mergeReqsTitleIdx]), m.Md.Viewport.View(), m.footerView())
+		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[mergeReqsCols.title.idx]), m.Md.Viewport.View(), m.footerView())
 
 	case MrCommentsView:
 		return m.renderTableView(m.MergeRequests.Comments.View(), "Comments")
@@ -218,5 +218,5 @@ func (m Model) getSelectedMrRow(idx tableColIndex, view views) string {
 }
 
 func (m *Model) setSelectedMr() {
-	m.MergeRequests.SelectedMr = m.getSelectedMrRow(mergeReqsTitleIdx, MrTableView)
+	m.MergeRequests.SelectedMr = m.getSelectedMrRow(mergeReqsCols.title.idx, MrTableView)
 }

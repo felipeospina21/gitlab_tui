@@ -18,19 +18,19 @@ func (m *Model) refetchMrList() {
 }
 
 func (m *Model) navigateToMr() {
-	selectedURL := m.getSelectedMrRow(mergeReqsURLIdx, MrTableView)
+	selectedURL := m.getSelectedMrRow(mergeReqsCols.url.idx, MrTableView)
 	exec.Openbrowser(selectedURL)
 }
 
 func (m *Model) viewDescription() {
-	content := string(m.getSelectedMrRow(mergeReqsDescIdx, MrTableView))
+	content := string(m.getSelectedMrRow(mergeReqsCols.desc.idx, MrTableView))
 	m.setResponseContent(content)
 	m.PrevView = MrTableView
 	m.CurrView = MdView
 }
 
 func (m *Model) viewComments() tea.Cmd {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(mergeReqsIDIdx, MrTableView))
+	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView))
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -43,7 +43,7 @@ func (m *Model) viewComments() tea.Cmd {
 }
 
 func (m *Model) viewPipelines() tea.Cmd {
-	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(mergeReqsIDIdx, MrTableView))
+	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView))
 	c := func() tea.Msg {
 		if err != nil {
 			return err

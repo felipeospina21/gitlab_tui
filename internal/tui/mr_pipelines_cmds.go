@@ -7,7 +7,7 @@ import (
 )
 
 func (m *Model) refetchPipelines() {
-	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(mergeReqsIDIdx, MrTableView))
+	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView))
 	if err != nil {
 		logger.Error(err)
 	}
@@ -15,6 +15,6 @@ func (m *Model) refetchPipelines() {
 }
 
 func (m *Model) navigateToPipeline() {
-	selectedURL := m.getSelectedMrRow(mrPipelinesURLIdx, MrPipelinesView)
+	selectedURL := m.getSelectedMrRow(pipelinesCols.url.idx, MrPipelinesView)
 	exec.Openbrowser(selectedURL)
 }
