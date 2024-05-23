@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"gitlab_tui/internal/logger"
+	"gitlab_tui/internal/server"
 	"gitlab_tui/internal/style"
 	"log"
 
@@ -16,6 +17,7 @@ type (
 )
 
 type Model struct {
+	Projects      ProjectsModel
 	MergeRequests MergeRequestsModel
 	Md            MdModel
 	CurrView      views
@@ -29,6 +31,7 @@ const (
 	MrCommentsView
 	MrPipelinesView
 	MdView
+	ProjectsView
 	TabsView
 )
 
@@ -59,6 +62,29 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch m.CurrView {
+		case ProjectsView:
+			switch msg.String() {
+			case "enter":
+				s := m.Projects.List.SelectedItem()
+				i, ok := s.(item)
+				if ok {
+					m.Projects.ProjectID = i.id
+					// m.refetchMrList()
+					// m.CurrView = MrTableView
+					r, err := server.GetMergeRequests()
+					c := func() tea.Msg {
+						if err != nil {
+							return err
+						}
+
+						return "success_mergeReqs"
+					}
+					cmds = append(cmds, c)
+					m.MergeRequests.List = InitMergeRequestsListTable(r, 155)
+				}
+			}
+			m.Projects.List, cmd = m.Projects.List.Update(msg)
+
 		case MrTableView:
 			switch msg.String() {
 			case "r":
@@ -125,17 +151,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		m.Window = msg
-		logger.Debug("window", func() {
-			log.Print(m.Window)
-			log.Print(msg)
-		})
-		cmd = m.setViewportViewSize(msg)
-		if cmd != nil {
-			cmds = append(cmds, cmd)
-		}
+		// cmd = m.setViewportViewSize(msg)
+		// if cmd != nil {
+		// 	cmds = append(cmds, cmd)
+		// }
 
 		switch m.CurrView {
+		case ProjectsView:
+			// m.Projects.List.SetSize(msg.Width, msg.Height)
+			m.resizeProjectsList(msg)
+
 		case MrTableView:
+			// cmd = m.setViewportViewSize(msg)
+			// if cmd != nil {
+			// 	cmds = append(cmds, cmd)
+			// }
 			return m.resizeMrTable(msg)
 
 		case MrCommentsView:
@@ -150,6 +180,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case string:
+		if msg == "success_mergeReqs" {
+			m.MergeRequests.List.SetStyles(style.Table)
+			m.CurrView = MrTableView
+		}
 		if msg == "success_comments" {
 			m.MergeRequests.Comments.SetStyles(style.Table)
 			m.CurrView = MrCommentsView
@@ -171,8 +205,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
+var docStyle = lipgloss.NewStyle().Margin(1, 2).Border(lipgloss.NormalBorder(), true).BorderForeground(lipgloss.Color("#25A065")).BorderTopBackground(lipgloss.Color("#25A065"))
+
 func (m Model) View() string {
 	switch m.CurrView {
+	case ProjectsView:
+		// return docStyle.Render(m.Projects.List.View())
+		return m.Projects.List.View()
+
 	case MdView:
 		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[mergeReqsCols.title.idx]), m.Md.Viewport.View(), m.footerView())
 

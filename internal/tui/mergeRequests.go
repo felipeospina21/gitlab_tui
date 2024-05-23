@@ -3,6 +3,7 @@ package tui
 import (
 	"gitlab_tui/internal/style"
 
+	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/table"
 )
 
@@ -83,12 +84,13 @@ type MergeRequestsModel struct {
 	Error      error
 }
 
-func (m Model) UpdateMergeRequestsModel(listModel table.Model, commentsModel table.Model, pipelinesModel table.Model) Model {
+func (m Model) UpdateMergeRequestsModel(listModel table.Model, commentsModel table.Model, pipelinesModel table.Model, projectsModel list.Model) Model {
 	listModel.SetStyles(style.Table)
 	commentsModel.SetStyles(style.Table)
 
 	newM := Model{
 		MergeRequests: MergeRequestsModel{List: listModel, Comments: commentsModel, Pipeline: pipelinesModel},
+		Projects:      ProjectsModel{List: projectsModel},
 		CurrView:      m.CurrView,
 		Md:            m.Md,
 	}

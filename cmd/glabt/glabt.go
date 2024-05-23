@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"gitlab_tui/config"
-	"gitlab_tui/internal/server"
 	"gitlab_tui/internal/tui"
 	"os"
 
@@ -18,7 +17,7 @@ func main() {
 	config.Load(&config.Config)
 
 	// TODO: handle fetching error
-	m, _ := InitModel()
+	m := InitModel()
 
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("Error running program:", err)
@@ -26,14 +25,17 @@ func main() {
 	}
 }
 
-func InitModel() (tui.Model, error) {
-	r, err := server.GetMergeRequests()
+func InitModel() tui.Model {
+	// r, err := server.GetMergeRequests()
 
-	t := tui.InitMergeRequestsListTable(r, 155)
+	// t := tui.InitMergeRequestsListTable(r, 155)
+	l := tui.InitProjectsList()
 
 	newM := tui.Model{
-		MergeRequests: tui.MergeRequestsModel{List: t},
+		Projects: tui.ProjectsModel{List: l},
+		CurrView: tui.ProjectsView,
+		// MergeRequests: tui.MergeRequestsModel{},
 	}
 
-	return newM, err
+	return newM
 }
