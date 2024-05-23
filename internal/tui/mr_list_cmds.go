@@ -9,7 +9,7 @@ import (
 )
 
 func (m *Model) refetchMrList() {
-	r, err := server.GetMergeRequests()
+	r, err := server.GetMergeRequests(m.Projects.ProjectID)
 	if err != nil {
 		logger.Error(err)
 	}
@@ -30,7 +30,7 @@ func (m *Model) viewDescription() {
 }
 
 func (m *Model) viewComments() tea.Cmd {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView))
+	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView), m.Projects.ProjectID)
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -43,7 +43,7 @@ func (m *Model) viewComments() tea.Cmd {
 }
 
 func (m *Model) viewPipelines() tea.Cmd {
-	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView))
+	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView), m.Projects.ProjectID)
 	c := func() tea.Msg {
 		if err != nil {
 			return err

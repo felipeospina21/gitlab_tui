@@ -6,15 +6,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-type ProjectsID struct {
-	PlanningTool string `mapstructure:"planning_tool_id"`
-}
-
 type config struct {
 	BaseURL    string `mapstructure:"base_url"`
 	APIToken   string `mapstructure:"token"`
 	APIVersion string `mapstructure:"api_version"`
-	ProjectsID `mapstructure:",squash"`
 }
 
 var Config config

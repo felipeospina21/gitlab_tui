@@ -7,7 +7,7 @@ import (
 )
 
 func (m *Model) refetchPipelines() {
-	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView))
+	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView), m.Projects.ProjectID)
 	if err != nil {
 		logger.Error(err)
 	}

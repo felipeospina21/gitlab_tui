@@ -69,9 +69,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				i, ok := s.(item)
 				if ok {
 					m.Projects.ProjectID = i.id
-					// m.refetchMrList()
-					// m.CurrView = MrTableView
-					r, err := server.GetMergeRequests()
+					r, err := server.GetMergeRequests(m.Projects.ProjectID)
 					c := func() tea.Msg {
 						if err != nil {
 							return err
@@ -151,6 +149,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		m.Window = msg
+		// TODO: Check this commented code, to set viewport size
+		// TODO: after fixing list width
+
 		// cmd = m.setViewportViewSize(msg)
 		// if cmd != nil {
 		// 	cmds = append(cmds, cmd)
@@ -158,14 +159,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch m.CurrView {
 		case ProjectsView:
-			// m.Projects.List.SetSize(msg.Width, msg.Height)
 			m.resizeProjectsList(msg)
 
 		case MrTableView:
-			// cmd = m.setViewportViewSize(msg)
-			// if cmd != nil {
-			// 	cmds = append(cmds, cmd)
-			// }
 			return m.resizeMrTable(msg)
 
 		case MrCommentsView:
@@ -205,11 +201,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
+// TODO: move this style to its own file once is ready
 var docStyle = lipgloss.NewStyle().Margin(1, 2).Border(lipgloss.NormalBorder(), true).BorderForeground(lipgloss.Color("#25A065")).BorderTopBackground(lipgloss.Color("#25A065"))
 
 func (m Model) View() string {
 	switch m.CurrView {
 	case ProjectsView:
+		// TODO: make list width to match terminal width
+
 		// return docStyle.Render(m.Projects.List.View())
 		return m.Projects.List.View()
 

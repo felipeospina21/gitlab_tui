@@ -8,7 +8,7 @@ import (
 )
 
 func (m *Model) refetchComments() {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView))
+	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(mergeReqsCols.iid.idx, MrTableView), m.Projects.ProjectID)
 	if err != nil {
 		logger.Error(err)
 	}

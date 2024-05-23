@@ -30,8 +30,8 @@ type GetMergeRequestsResponse = struct {
 	IsDraft             bool   `json:"draft"`
 }
 
-func GetMergeRequests() ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests", config.Config.BaseURL, config.Config.APIVersion, config.Config.ProjectsID.PlanningTool)
+func GetMergeRequests(projectID string) ([]table.Row, error) {
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests", config.Config.BaseURL, config.Config.APIVersion, projectID)
 	token := config.Config.APIToken
 	mrURLParams := []string{"state=opened"}
 	params := "?" + strings.Join(mrURLParams, "&")
@@ -99,8 +99,8 @@ type GetMergeRequestCommentsResponse = struct {
 	Resolved  bool   `json:"resolved"`
 }
 
-func GetMergeRequestComments(mrID string) ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.Config.BaseURL, config.Config.APIVersion, config.Config.ProjectsID.PlanningTool, mrID)
+func GetMergeRequestComments(mrID string, projectID string) ([]table.Row, error) {
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.Config.BaseURL, config.Config.APIVersion, projectID, mrID)
 	token := config.Config.APIToken
 	mrURLParams := []string{"order_by=updated_at"}
 	params := "?" + strings.Join(mrURLParams, "&")
@@ -151,8 +151,8 @@ type GetMergeRequestPipelinesResponse = struct {
 	URL       string `json:"web_url"`
 }
 
-func GetMergeRequestPipelines(mrID string) ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/pipelines", config.Config.BaseURL, config.Config.APIVersion, config.Config.ProjectsID.PlanningTool, mrID)
+func GetMergeRequestPipelines(mrID string, projectID string) ([]table.Row, error) {
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/pipelines", config.Config.BaseURL, config.Config.APIVersion, projectID, mrID)
 	token := config.Config.APIToken
 
 	responseData, err := fetchData(url, fetchConfig{method: "GET", params: "", token: token})
