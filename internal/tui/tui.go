@@ -3,7 +3,6 @@ package tui
 import (
 	"fmt"
 	"gitlab_tui/internal/logger"
-	"gitlab_tui/internal/server"
 	"gitlab_tui/internal/style"
 	"log"
 
@@ -65,26 +64,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case ProjectsView:
 			switch msg.String() {
 			case "enter":
-				s := m.Projects.List.SelectedItem()
-				i, ok := s.(item)
-				if ok {
-					m.Projects.ProjectID = i.id
-					r, err := server.GetMergeRequests(m.Projects.ProjectID)
-					c := func() tea.Msg {
-						if err != nil {
-							return err
-						}
-
-						return "success_mergeReqs"
-					}
-					cmds = append(cmds, c)
-					m.MergeRequests.List = InitMergeRequestsListTable(r, 155)
-				}
+				c := m.viewMergeReqs(m.Window)
+				cmds = append(cmds, c)
 			}
 			m.Projects.List, cmd = m.Projects.List.Update(msg)
 
 		case MrTableView:
 			switch msg.String() {
+			case "backspace":
+				m.CurrView = ProjectsView
 			case "r":
 				m.refetchMrList()
 
@@ -149,18 +137,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		m.Window = msg
-		// TODO: Check this commented code, to set viewport size
-		// TODO: after fixing list width
 
-		// cmd = m.setViewportViewSize(msg)
-		// if cmd != nil {
-		// 	cmds = append(cmds, cmd)
-		// }
+		cmd = m.setViewportViewSize(msg)
+		if cmd != nil {
+			cmds = append(cmds, cmd)
+		}
 
 		switch m.CurrView {
-		case ProjectsView:
-			m.resizeProjectsList(msg)
-
 		case MrTableView:
 			return m.resizeMrTable(msg)
 
@@ -201,16 +184,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// TODO: move this style to its own file once is ready
-var docStyle = lipgloss.NewStyle().Margin(1, 2).Border(lipgloss.NormalBorder(), true).BorderForeground(lipgloss.Color("#25A065")).BorderTopBackground(lipgloss.Color("#25A065"))
-
 func (m Model) View() string {
 	switch m.CurrView {
 	case ProjectsView:
-		// TODO: make list width to match terminal width
-
-		// return docStyle.Render(m.Projects.List.View())
-		return m.Projects.List.View()
+		return style.Base.Render(m.Projects.List.View())
 
 	case MdView:
 		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[mergeReqsCols.title.idx]), m.Md.Viewport.View(), m.footerView())

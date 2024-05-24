@@ -48,7 +48,7 @@ func (m *Model) setResponseContent(content string) {
 
 func (m *Model) setViewportViewSize(msg tea.WindowSizeMsg) tea.Cmd {
 	w := msg.Width
-	headerHeight := lipgloss.Height(m.headerView(m.MergeRequests.List.SelectedRow()[mergeReqsCols.title.idx]))
+	headerHeight := lipgloss.Height(m.headerView(""))
 	footerHeight := lipgloss.Height(m.footerView())
 	verticalMarginHeight := headerHeight + footerHeight
 
