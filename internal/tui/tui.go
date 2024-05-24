@@ -206,12 +206,13 @@ func (m Model) View() string {
 
 func (m Model) renderTableView(view string, title string) string {
 	titleStyle := lipgloss.NewStyle().Margin(2, 0, 1, 2).Foreground(lipgloss.Color("51"))
+	project := m.Projects.List.SelectedItem().FilterValue()
 
 	var t string
 	if title == "" {
-		t = "Merge Requests"
+		t = fmt.Sprintf("%s - Merge Requests", project)
 	} else {
-		t = fmt.Sprintf("Merge Request %s | %s", title, m.MergeRequests.SelectedMr)
+		t = fmt.Sprintf("%s - Merge Request %s | %s", project, title, m.MergeRequests.SelectedMr)
 	}
 	return lipgloss.JoinVertical(0, titleStyle.Render(t), style.Base.Render(view)+"\n")
 }
