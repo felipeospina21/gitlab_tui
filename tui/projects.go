@@ -1,12 +1,9 @@
 package tui
 
 import (
-	"gitlab_tui/internal/server"
 	"gitlab_tui/internal/style"
-	tbl "gitlab_tui/tui/components/table"
 
 	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type item struct {
@@ -65,28 +62,4 @@ func InitProjectsList() list.Model {
 	l.Styles.HelpStyle = style.ListHelpStyle
 
 	return l
-}
-
-// View cmds
-func (m *Model) viewMergeReqs(window tea.WindowSizeMsg) tea.Cmd {
-	s := m.Projects.List.SelectedItem()
-	i, ok := s.(item)
-	var c tea.Cmd
-	if ok {
-		m.Projects.ProjectID = i.id
-		r, err := server.GetMergeRequests(m.Projects.ProjectID)
-		c = func() tea.Msg {
-			if err != nil {
-				return err
-			}
-
-			return "success_mergeReqs"
-		}
-		m.MergeRequests.List = tbl.InitModel(tbl.InitModelParams{
-			Rows:      r,
-			Colums:    tbl.GetMergeReqsColums(window.Width - 10),
-			StyleFunc: tbl.StyleIconsColumns(style.Table(), tbl.MergeReqsIconCols),
-		})
-	}
-	return c
 }
