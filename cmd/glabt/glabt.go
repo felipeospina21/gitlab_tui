@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"gitlab_tui/config"
-	"gitlab_tui/internal/tui"
+	"gitlab_tui/tui"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
