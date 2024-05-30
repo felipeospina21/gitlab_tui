@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab_tui/config"
+	"gitlab_tui/internal/icon"
 	"gitlab_tui/internal/logger"
 	"strconv"
 	"strings"
@@ -70,21 +71,21 @@ func GetMergeRequests(projectID string) ([]table.Row, error) {
 
 func checkStatus(status string) string {
 	s := map[string]string{
-		"not_approved": " ",
-		"unchecked":    " ",
-		"mergeable":    " ",
-		"checking":     " ",
+		"not_approved": icon.Empty,
+		"unchecked":    icon.Dash,
+		"mergeable":    icon.Check,
+		"checking":     icon.Clock,
 	}
 	return s[status]
 }
 
 func renderIcon(b bool) string {
-	icon := ""
+	i := icon.Empty
 	if b {
-		icon = " "
+		i = icon.Check
 	}
 
-	return icon
+	return i
 }
 
 type GetMergeRequestCommentsResponse = struct {
@@ -130,7 +131,7 @@ func GetMergeRequestComments(mrID string, projectID string) ([]table.Row, error)
 				item.Author.Name,
 				createdAt,
 				UpdatedAt,
-				strconv.FormatBool(item.Resolved),
+				renderIcon(item.Resolved),
 				item.Body,
 			}
 			rows = append(rows, n)

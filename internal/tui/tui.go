@@ -160,16 +160,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case string:
 		if msg == "success_mergeReqs" {
-			m.MergeRequests.List.SetStyles(style.Table)
+			// m.MergeRequests.List.SetStyles(style.Table)
 			m.CurrView = MrTableView
 		}
 		if msg == "success_comments" {
-			m.MergeRequests.Comments.SetStyles(style.Table)
+			// m.MergeRequests.Comments.SetStyles(style.Table)
 			m.CurrView = MrCommentsView
 			m.setSelectedMr()
 		}
 		if msg == "success_pipelines" {
-			m.MergeRequests.Pipeline.SetStyles(style.Table)
+			// m.MergeRequests.Pipeline.SetStyles(style.Table)
 			m.CurrView = MrPipelinesView
 			m.setSelectedMr()
 		}
@@ -187,7 +187,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	switch m.CurrView {
 	case ProjectsView:
-		return style.Base.Render(m.Projects.List.View())
+		return style.ListTitleStyle.Render(m.Projects.List.View())
 
 	case MdView:
 		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[mergeReqsCols.title.idx]), m.Md.Viewport.View(), m.footerView())
@@ -205,7 +205,6 @@ func (m Model) View() string {
 }
 
 func (m Model) renderTableView(view string, title string) string {
-	titleStyle := lipgloss.NewStyle().Margin(2, 0, 1, 2).Foreground(lipgloss.Color("51"))
 	project := m.Projects.List.SelectedItem().FilterValue()
 
 	var t string
@@ -214,7 +213,7 @@ func (m Model) renderTableView(view string, title string) string {
 	} else {
 		t = fmt.Sprintf("%s - Merge Request %s | %s", project, title, m.MergeRequests.SelectedMr)
 	}
-	return lipgloss.JoinVertical(0, titleStyle.Render(t), style.Base.Render(view)+"\n")
+	return lipgloss.JoinVertical(0, style.TableTitle.Render(t), style.Base.Render(view)+"\n")
 }
 
 func (m Model) getSelectedMrRow(idx tableColIndex, view views) string {

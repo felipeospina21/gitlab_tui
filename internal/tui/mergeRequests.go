@@ -1,10 +1,12 @@
 package tui
 
 import (
+	"gitlab_tui/internal/icon"
 	"gitlab_tui/internal/style"
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type tableCol struct {
@@ -85,8 +87,8 @@ type MergeRequestsModel struct {
 }
 
 func (m Model) UpdateMergeRequestsModel(listModel table.Model, commentsModel table.Model, pipelinesModel table.Model, projectsModel list.Model) Model {
-	listModel.SetStyles(style.Table)
-	commentsModel.SetStyles(style.Table)
+	// listModel.SetStyles(style.Table())
+	// commentsModel.SetStyles(style.Table())
 
 	newM := Model{
 		MergeRequests: MergeRequestsModel{List: listModel, Comments: commentsModel, Pipeline: pipelinesModel},
@@ -103,14 +105,14 @@ func InitMergeRequestsListTable(r []table.Row, width int) table.Model {
 	title := int(float32(width) * 0.45)
 	author := int(float32(width) * 0.1)
 	status := int(float32(width) * 0.13)
-	icon := int(float32(width) * 0.04)
+	i := int(float32(width) * 0.04)
 	url := 0
 
 	if width > 170 {
 		id = int(float32(width) * 0.03)
 		title = int(float32(width) * 0.35)
 		status = int(float32(width) * 0.1)
-		total := id + title + author + (status * 2) + (icon * 2)
+		total := id + title + author + (status * 2) + (i * 2)
 		url = width - total - 10
 	}
 
@@ -120,18 +122,30 @@ func InitMergeRequestsListTable(r []table.Row, width int) table.Model {
 		{Title: mergeReqsCols.author.name, Width: author},
 		{Title: mergeReqsCols.status.name, Width: status},
 		{Title: mergeReqsCols.mergeStatus.name, Width: status},
-		{Title: mergeReqsCols.draft.name, Width: icon},
-		{Title: mergeReqsCols.confilcts.name, Width: icon},
+		{Title: mergeReqsCols.draft.name, Width: i},
+		{Title: mergeReqsCols.confilcts.name, Width: i},
 		{Title: mergeReqsCols.url.name, Width: url},
 		{Title: mergeReqsCols.desc.name, Width: 0},
 	}
+
+	s := style.Table()
 
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(r),
 		table.WithFocused(true),
 		table.WithHeight(len(r)),
-		table.WithStyles(style.Table),
+		table.WithStyles(s),
+		table.WithStyleFunc(func(row, col int, value string) lipgloss.Style {
+			if col == int(mergeReqsCols.mergeStatus.idx) || col == int(mergeReqsCols.draft.idx) || col == int(mergeReqsCols.confilcts.idx) {
+				if value == icon.Check {
+					return s.Cell.Foreground(lipgloss.Color(style.Green[300]))
+				} else if value == icon.Clock {
+					return s.Cell.Foreground(lipgloss.Color(style.Yellow[300]))
+				}
+			}
+			return s.Cell
+		}),
 	)
 
 	return t
@@ -147,11 +161,25 @@ func SetMergeRequestsCommentsModel(msg []table.Row) table.Model {
 		{Title: commentsCols.resolved.name, Width: 10},
 		{Title: commentsCols.body.name, Width: 0},
 	}
+
+	s := style.Table()
+
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(msg),
 		table.WithFocused(true),
 		table.WithHeight(len(msg)),
+		table.WithStyles(s),
+		table.WithStyleFunc(func(row, col int, value string) lipgloss.Style {
+			if col == int(mergeReqsCols.mergeStatus.idx) || col == int(mergeReqsCols.draft.idx) || col == int(mergeReqsCols.confilcts.idx) {
+				if value == icon.Check {
+					return s.Cell.Foreground(lipgloss.Color(style.Green[300]))
+				} else if value == icon.Clock {
+					return s.Cell.Foreground(lipgloss.Color(style.Yellow[300]))
+				}
+			}
+			return s.Cell
+		}),
 	)
 
 	return t
@@ -167,11 +195,25 @@ func SetMergeRequestPipelinesModel(msg []table.Row) table.Model {
 		{Title: pipelinesCols.updatedAt.name, Width: 30},
 		{Title: pipelinesCols.url.name, Width: 0},
 	}
+
+	s := style.Table()
+
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(msg),
 		table.WithFocused(true),
 		table.WithHeight(len(msg)),
+		table.WithStyles(s),
+		table.WithStyleFunc(func(row, col int, value string) lipgloss.Style {
+			if col == int(mergeReqsCols.mergeStatus.idx) || col == int(mergeReqsCols.draft.idx) || col == int(mergeReqsCols.confilcts.idx) {
+				if value == icon.Check {
+					return s.Cell.Foreground(lipgloss.Color(style.Green[300]))
+				} else if value == icon.Clock {
+					return s.Cell.Foreground(lipgloss.Color(style.Yellow[300]))
+				}
+			}
+			return s.Cell
+		}),
 	)
 
 	return t
