@@ -34,7 +34,7 @@ func (m *Model) viewDescription() {
 }
 
 func (m *Model) viewComments() tea.Cmd {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(tbl.MergeReqsCols.Iid.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(tbl.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -47,7 +47,7 @@ func (m *Model) viewComments() tea.Cmd {
 }
 
 func (m *Model) viewPipelines() tea.Cmd {
-	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(tbl.MergeReqsCols.Iid.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(tbl.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -60,7 +60,7 @@ func (m *Model) viewPipelines() tea.Cmd {
 
 // Comments Table
 func (m *Model) refetchComments() {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(tbl.MergeReqsCols.Iid.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(tbl.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
 	if err != nil {
 		logger.Error(err)
 	}
@@ -82,7 +82,7 @@ func (m *Model) navigateToMrComment() {
 
 // Pipelines Table
 func (m *Model) refetchPipelines() {
-	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(tbl.MergeReqsCols.Iid.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(tbl.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
 	if err != nil {
 		logger.Error(err)
 	}

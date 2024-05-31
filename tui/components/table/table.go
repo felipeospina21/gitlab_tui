@@ -1,9 +1,12 @@
 package table
 
 import (
+	"fmt"
 	"gitlab_tui/internal/icon"
 	"gitlab_tui/internal/style"
+	"math"
 	"slices"
+	"time"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
@@ -17,7 +20,7 @@ type tableCol struct {
 }
 
 type mergeReqsTable struct {
-	Iid         tableCol
+	CreatedAd   tableCol
 	Title       tableCol
 	Author      tableCol
 	Status      tableCol
@@ -49,7 +52,7 @@ type mergeReqsPipelinesTable struct {
 }
 
 var MergeReqsCols = mergeReqsTable{
-	Iid:         tableCol{Idx: 0, Name: "Iid"},
+	CreatedAd:   tableCol{Idx: 0, Name: icon.Clock},
 	Title:       tableCol{Idx: 1, Name: "Title"},
 	Author:      tableCol{Idx: 2, Name: "Author"},
 	Status:      tableCol{Idx: 3, Name: "Status"},
@@ -146,7 +149,7 @@ func GetMergeReqsColums(width int) []table.Column {
 	}
 
 	columns := []table.Column{
-		{Title: MergeReqsCols.Iid.Name, Width: id},
+		{Title: MergeReqsCols.CreatedAd.Name, Width: id},
 		{Title: MergeReqsCols.Title.Name, Width: title},
 		{Title: MergeReqsCols.Author.Name, Width: author},
 		{Title: MergeReqsCols.Status.Name, Width: status},
@@ -218,5 +221,36 @@ func StyleIconsColumns(s table.Styles, iconColIdx []int) table.StyleFunc {
 			}
 		}
 		return s.Cell
+	}
+}
+
+func FormatTime(d string) string {
+	t, _ := time.Parse(time.RFC3339, d)
+
+	locale := t.Local()
+
+	r := time.Since(locale)
+
+	days := math.Floor(r.Hours()) / 24
+	week := days / 7
+
+	switch {
+	case week > 4:
+		return fmt.Sprintf("%.0f M", week/4)
+
+	case days > 7:
+		return fmt.Sprintf("%.0f w", week)
+
+	case math.Floor(r.Hours()) > 24:
+		return fmt.Sprintf("%.0f d", days)
+
+	case math.Floor(r.Hours()) > 0:
+		return fmt.Sprintf("%.0f h", r.Hours())
+
+	case math.Floor(r.Minutes()) > 0:
+		return fmt.Sprintf("%.0f m", r.Minutes())
+
+	default:
+		return fmt.Sprintf("%.0f s", r.Seconds())
 	}
 }

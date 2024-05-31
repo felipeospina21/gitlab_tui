@@ -6,6 +6,7 @@ import (
 	"gitlab_tui/config"
 	"gitlab_tui/internal/icon"
 	"gitlab_tui/internal/logger"
+	tbl "gitlab_tui/tui/components/table"
 	"strconv"
 	"strings"
 
@@ -18,10 +19,10 @@ type (
 )
 
 type GetMergeRequestsResponse = struct {
-	ID     int    `json:"iid"`
-	Title  string `json:"title"`
-	Desc   string `json:"description"`
-	Author struct {
+	CreatedAt string `json:"created_at"`
+	Title     string `json:"title"`
+	Desc      string `json:"description"`
+	Author    struct {
 		Name string `json:"name"`
 	}
 	MergeStatus         string `json:"merge_status"`
@@ -52,8 +53,10 @@ func GetMergeRequests(projectID string) ([]table.Row, error) {
 	// transforms response interface to match table Row
 	var rows []table.Row
 	for _, item := range r {
+		// createdAt, _, _ := strings.Cut(item.CreatedAt, "T")
+		createdAt := tbl.FormatTime(item.CreatedAt)
 		n := table.Row{
-			strconv.Itoa(item.ID),
+			createdAt,
 			item.Title,
 			item.Author.Name,
 			item.MergeStatus,
@@ -123,14 +126,14 @@ func GetMergeRequestComments(mrID string, projectID string) ([]table.Row, error)
 	for _, item := range r {
 		if item.Type != "" {
 			createdAt, _, _ := strings.Cut(item.CreatedAt, "T")
-			UpdatedAt, _, _ := strings.Cut(item.UpdatedAt, "T")
+			updatedAt, _, _ := strings.Cut(item.UpdatedAt, "T")
 
 			n := table.Row{
 				strconv.Itoa(item.ID),
 				item.Type,
 				item.Author.Name,
 				createdAt,
-				UpdatedAt,
+				updatedAt,
 				renderIcon(item.Resolved),
 				item.Body,
 			}

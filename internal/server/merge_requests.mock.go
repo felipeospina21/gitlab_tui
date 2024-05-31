@@ -26,8 +26,9 @@ func GetMergeRequestsMock() ([]table.Row, error) {
 	// transforms response interface to match table Row
 	var rows []table.Row
 	for _, item := range r {
+		createdAt, _, _ := strings.Cut(item.CreatedAt, "T")
 		n := table.Row{
-			strconv.Itoa(item.ID),
+			createdAt,
 			item.Title,
 			item.Author.Name,
 			item.MergeStatus,
