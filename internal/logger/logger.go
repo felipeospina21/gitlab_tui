@@ -27,8 +27,8 @@ func Debug(logPrefix string, cb func()) {
 func Error(error error) {
 	f, err := tea.LogToFile(".log", "Error")
 	if err != nil {
-		log.Fatal("Opening error ", err)
+		log.Fatal("Opening error \n", err)
 	}
 	defer f.Close()
-	log.Fatal(error)
+	log.Fatalf("%s\n", error)
 }

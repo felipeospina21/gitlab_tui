@@ -23,12 +23,12 @@ type mergeReqsTable struct {
 	CreatedAd   tableCol
 	Title       tableCol
 	Author      tableCol
-	Status      tableCol
 	MergeStatus tableCol
 	Draft       tableCol
 	Confilcts   tableCol
 	URL         tableCol
 	Desc        tableCol
+	ID          tableCol
 }
 
 type mergeReqsCommentsTable struct {
@@ -55,12 +55,12 @@ var MergeReqsCols = mergeReqsTable{
 	CreatedAd:   tableCol{Idx: 0, Name: icon.Clock},
 	Title:       tableCol{Idx: 1, Name: "Title"},
 	Author:      tableCol{Idx: 2, Name: "Author"},
-	Status:      tableCol{Idx: 3, Name: "Status"},
-	MergeStatus: tableCol{Idx: 4, Name: "Merge Status"},
-	Draft:       tableCol{Idx: 5, Name: "Draft"},
-	Confilcts:   tableCol{Idx: 6, Name: "Conflicts"},
-	URL:         tableCol{Idx: 7, Name: "Url"},
-	Desc:        tableCol{Idx: 8, Name: "Description"},
+	MergeStatus: tableCol{Idx: 3, Name: "Merge Status"},
+	Draft:       tableCol{Idx: 4, Name: "Draft"},
+	Confilcts:   tableCol{Idx: 5, Name: "Conflicts"},
+	URL:         tableCol{Idx: 6, Name: "Url"},
+	Desc:        tableCol{Idx: 7, Name: "Description"},
+	ID:          tableCol{Idx: 8, Name: "Id"},
 }
 
 var CommentsCols = mergeReqsCommentsTable{
@@ -134,30 +134,22 @@ func InitModel(params InitModelParams) table.Model {
 
 func GetMergeReqsColums(width int) []table.Column {
 	id := int(float32(width) * 0.06)
-	title := int(float32(width) * 0.45)
-	author := int(float32(width) * 0.1)
-	status := int(float32(width) * 0.13)
+	title := int(float32(width) * 0.5)
+	author := int(float32(width) * 0.2)
+	status := int(float32(width) * 0.1)
 	i := int(float32(width) * 0.04)
 	url := 0
-
-	if width > 170 {
-		id = int(float32(width) * 0.03)
-		title = int(float32(width) * 0.35)
-		status = int(float32(width) * 0.1)
-		total := id + title + author + (status * 2) + (i * 2)
-		url = width - total - 10
-	}
 
 	columns := []table.Column{
 		{Title: MergeReqsCols.CreatedAd.Name, Width: id},
 		{Title: MergeReqsCols.Title.Name, Width: title},
 		{Title: MergeReqsCols.Author.Name, Width: author},
-		{Title: MergeReqsCols.Status.Name, Width: status},
 		{Title: MergeReqsCols.MergeStatus.Name, Width: status},
 		{Title: MergeReqsCols.Draft.Name, Width: i},
 		{Title: MergeReqsCols.Confilcts.Name, Width: i},
 		{Title: MergeReqsCols.URL.Name, Width: url},
 		{Title: MergeReqsCols.Desc.Name, Width: 0},
+		{Title: MergeReqsCols.ID.Name, Width: 0},
 	}
 
 	return columns

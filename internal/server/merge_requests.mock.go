@@ -31,7 +31,6 @@ func GetMergeRequestsMock() ([]table.Row, error) {
 			createdAt,
 			item.Title,
 			item.Author.Name,
-			item.MergeStatus,
 			checkStatus(item.DetailedMergeStatus),
 			renderIcon(item.IsDraft),
 			renderIcon(item.HasConflicts),

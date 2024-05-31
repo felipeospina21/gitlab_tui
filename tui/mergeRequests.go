@@ -9,19 +9,33 @@ import (
 )
 
 type MergeRequestsModel struct {
-	List       table.Model
-	Comments   table.Model
-	Pipeline   table.Model
-	SelectedMr string
-	Error      error
+	List         table.Model
+	Comments     table.Model
+	Pipeline     table.Model
+	SelectedMr   string
+	Error        error
+	ListKeys     MergeReqsKeyMap
+	CommentsKeys CommentsKeyMap
+	PipelineKeys PipelineKeyMap
 }
 
-func (m Model) UpdateMergeRequestsModel(listModel table.Model, commentsModel table.Model, pipelinesModel table.Model, projectsModel list.Model) Model {
+func (m Model) InitMergeRequestsModel(listModel table.Model, commentsModel table.Model, pipelinesModel table.Model, projectsModel list.Model) Model {
 	newM := Model{
-		MergeRequests: MergeRequestsModel{List: listModel, Comments: commentsModel, Pipeline: pipelinesModel},
-		Projects:      ProjectsModel{List: projectsModel},
-		CurrView:      m.CurrView,
-		Md:            m.Md,
+		MergeRequests: MergeRequestsModel{
+			List:         listModel,
+			Comments:     commentsModel,
+			Pipeline:     pipelinesModel,
+			ListKeys:     MergeReqsKeys,
+			CommentsKeys: CommentsKeys,
+			PipelineKeys: PipelinKeys,
+		},
+		Projects: ProjectsModel{
+			List:      projectsModel,
+			ProjectID: m.Projects.ProjectID,
+		},
+		CurrView: m.CurrView,
+		Md:       m.Md,
+		Help:     m.Help,
 	}
 
 	return newM

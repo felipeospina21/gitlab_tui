@@ -34,7 +34,7 @@ func (m *Model) viewDescription() {
 }
 
 func (m *Model) viewComments() tea.Cmd {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(tbl.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(tbl.MergeReqsCols.ID.Idx, MrTableView), m.Projects.ProjectID)
 	c := func() tea.Msg {
 		if err != nil {
 			return err

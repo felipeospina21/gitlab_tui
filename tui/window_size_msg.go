@@ -19,7 +19,8 @@ func (m *Model) resizeMrTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 		StyleFunc: tbl.StyleIconsColumns(style.Table(), tbl.MergeReqsIconCols),
 	})
 
-	newM := m.UpdateMergeRequestsModel(t, table.Model{}, table.Model{}, m.Projects.List)
+	// newM := m.InitMergeRequestsModel(t, m.MergeRequests.Comments, , m.Projects.List)
+	newM := m.InitMergeRequestsModel(t, table.Model{}, table.Model{}, m.Projects.List)
 
 	return newM, func() tea.Msg {
 		return tea.ClearScreen()
@@ -35,7 +36,7 @@ func (m *Model) resizeMrCommentsTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 		StyleFunc: tbl.StyleIconsColumns(style.Table(), tbl.CommentsIconCols),
 	})
 
-	newM := m.UpdateMergeRequestsModel(m.MergeRequests.List, t, m.MergeRequests.Pipeline, m.Projects.List)
+	newM := m.InitMergeRequestsModel(m.MergeRequests.List, t, m.MergeRequests.Pipeline, m.Projects.List)
 
 	return newM, func() tea.Msg {
 		return tea.ClearScreen()
@@ -51,7 +52,7 @@ func (m *Model) resizeMrPipelinesTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 		StyleFunc: tbl.StyleIconsColumns(style.Table(), tbl.PipelinesIconCols),
 	})
 
-	newM := m.UpdateMergeRequestsModel(m.MergeRequests.List, m.MergeRequests.Comments, t, m.Projects.List)
+	newM := m.InitMergeRequestsModel(m.MergeRequests.List, m.MergeRequests.Comments, t, m.Projects.List)
 
 	return newM, func() tea.Msg {
 		return tea.ClearScreen()
@@ -80,7 +81,7 @@ func (m *Model) resizeMdView(msg tea.WindowSizeMsg) {
 
 func (m *Model) resizeProjectsList(msg tea.WindowSizeMsg) {
 	l := InitProjectsList()
-	newM := m.UpdateMergeRequestsModel(m.MergeRequests.List, m.MergeRequests.Comments, m.MergeRequests.Pipeline, l)
+	newM := m.InitMergeRequestsModel(m.MergeRequests.List, m.MergeRequests.Comments, m.MergeRequests.Pipeline, l)
 	m.Projects.List = newM.Projects.List
 	m.Projects.List.SetSize(msg.Width, msg.Height)
 }

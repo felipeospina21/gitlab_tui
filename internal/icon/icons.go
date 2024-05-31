@@ -4,9 +4,12 @@ package icon
 // nf-oct family
 
 const (
-	Dash  = " "
-	Check = " "
-	Cross = " "
-	Clock = " "
-	Empty = ""
+	Dash       = " "
+	Check      = " "
+	Cross      = " "
+	Clock      = " "
+	Rebase     = " "
+	Edit       = " "
+	Discussion = " "
+	Empty      = ""
 )
