@@ -6,7 +6,7 @@ import (
 	"gitlab_tui/internal/logger"
 	"gitlab_tui/internal/server"
 	"gitlab_tui/internal/style"
-	tbl "gitlab_tui/tui/components/table"
+	"gitlab_tui/tui/components/table"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -22,19 +22,19 @@ func (m *Model) refetchMrList() {
 }
 
 func (m *Model) navigateToMr() {
-	selectedURL := m.getSelectedMrRow(tbl.MergeReqsCols.URL.Idx, MrTableView)
+	selectedURL := m.getSelectedMrRow(table.MergeReqsCols.URL.Idx, MrTableView)
 	exec.Openbrowser(selectedURL)
 }
 
 func (m *Model) viewDescription() {
-	content := string(m.getSelectedMrRow(tbl.MergeReqsCols.Desc.Idx, MrTableView))
+	content := string(m.getSelectedMrRow(table.MergeReqsCols.Desc.Idx, MrTableView))
 	m.setResponseContent(content)
 	m.PrevView = MrTableView
 	m.CurrView = MdView
 }
 
 func (m *Model) viewComments() tea.Cmd {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(tbl.MergeReqsCols.ID.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(table.MergeReqsCols.ID.Idx, MrTableView), m.Projects.ProjectID)
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -47,7 +47,7 @@ func (m *Model) viewComments() tea.Cmd {
 }
 
 func (m *Model) viewPipelines() tea.Cmd {
-	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(tbl.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(table.MergeReqsCols.ID.Idx, MrTableView), m.Projects.ProjectID)
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -60,7 +60,7 @@ func (m *Model) viewPipelines() tea.Cmd {
 
 // Comments Table
 func (m *Model) refetchComments() {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(tbl.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(table.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
 	if err != nil {
 		logger.Error(err)
 	}
@@ -68,21 +68,21 @@ func (m *Model) refetchComments() {
 }
 
 func (m *Model) viewCommentContent() {
-	content := string(m.getSelectedMrRow(tbl.CommentsCols.Body.Idx, MrCommentsView))
+	content := string(m.getSelectedMrRow(table.CommentsCols.Body.Idx, MrCommentsView))
 	m.setResponseContent(content)
 	m.PrevView = MrCommentsView
 	m.CurrView = MdView
 }
 
 func (m *Model) navigateToMrComment() {
-	selectedURL := m.getSelectedMrRow(tbl.MergeReqsCols.URL.Idx, MrTableView)
-	commentID := m.getSelectedMrRow(tbl.CommentsCols.ID.Idx, MrCommentsView)
+	selectedURL := m.getSelectedMrRow(table.MergeReqsCols.URL.Idx, MrTableView)
+	commentID := m.getSelectedMrRow(table.CommentsCols.ID.Idx, MrCommentsView)
 	exec.Openbrowser(fmt.Sprintf("%s#note_%s", selectedURL, commentID))
 }
 
 // Pipelines Table
 func (m *Model) refetchPipelines() {
-	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(tbl.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(table.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
 	if err != nil {
 		logger.Error(err)
 	}
@@ -90,7 +90,7 @@ func (m *Model) refetchPipelines() {
 }
 
 func (m *Model) navigateToPipeline() {
-	selectedURL := m.getSelectedMrRow(tbl.PipelinesCols.URL.Idx, MrPipelinesView)
+	selectedURL := m.getSelectedMrRow(table.PipelinesCols.URL.Idx, MrPipelinesView)
 	exec.Openbrowser(selectedURL)
 }
 
@@ -109,10 +109,10 @@ func (m *Model) viewMergeReqs(window tea.WindowSizeMsg) tea.Cmd {
 
 			return "success_mergeReqs"
 		}
-		m.MergeRequests.List = tbl.InitModel(tbl.InitModelParams{
+		m.MergeRequests.List = table.InitModel(table.InitModelParams{
 			Rows:      r,
-			Colums:    tbl.GetMergeReqsColums(window.Width - 10),
-			StyleFunc: tbl.StyleIconsColumns(style.Table(), tbl.MergeReqsIconCols),
+			Colums:    table.GetMergeReqsColums(window.Width - 10),
+			StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.MergeReqsIconCols),
 		})
 	}
 	return c

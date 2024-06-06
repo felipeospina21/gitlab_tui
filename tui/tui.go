@@ -5,7 +5,7 @@ import (
 	"gitlab_tui/internal/logger"
 	"gitlab_tui/internal/style"
 	"gitlab_tui/tui/components"
-	tbl "gitlab_tui/tui/components/table"
+	"gitlab_tui/tui/components/table"
 	"log"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -194,10 +194,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	switch m.CurrView {
 	case ProjectsView:
-		return style.ListTitleStyle.Render(m.Projects.List.View())
+		return style.ListItemStyle.Render(m.Projects.List.View())
 
 	case MdView:
-		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[tbl.MergeReqsCols.Title.Idx]), m.Md.Viewport.View(), m.footerView())
+		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[table.MergeReqsCols.Title.Idx]), m.Md.Viewport.View(), m.footerView())
 
 	case MrCommentsView:
 		return m.renderTableView(m.MergeRequests.Comments.View(), "Comments", m.Help.Model.View(m.MergeRequests.CommentsKeys))
@@ -228,7 +228,7 @@ func (m Model) renderTableView(view string, title string, footer string) string 
 	)
 }
 
-func (m Model) getSelectedMrRow(idx tbl.TableColIndex, view views) string {
+func (m Model) getSelectedMrRow(idx table.TableColIndex, view views) string {
 	switch view {
 	case MrTableView:
 		return m.MergeRequests.List.SelectedRow()[idx]
@@ -246,5 +246,5 @@ func (m Model) getSelectedMrRow(idx tbl.TableColIndex, view views) string {
 }
 
 func (m *Model) setSelectedMr() {
-	m.MergeRequests.SelectedMr = m.getSelectedMrRow(tbl.MergeReqsCols.Title.Idx, MrTableView)
+	m.MergeRequests.SelectedMr = m.getSelectedMrRow(table.MergeReqsCols.Title.Idx, MrTableView)
 }

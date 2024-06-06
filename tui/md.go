@@ -2,8 +2,8 @@ package tui
 
 import (
 	"fmt"
+	"gitlab_tui/internal/logger"
 	"gitlab_tui/internal/style"
-	"log"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"
@@ -96,7 +96,7 @@ func max(a, b int) int {
 func renderWithGlamour(m MdModel, md string) string {
 	s, err := glamourRender(m, md)
 	if err != nil {
-		log.Println("error rendering with Glamour:", err)
+		logger.Error(err)
 	}
 	return s
 }
@@ -104,9 +104,8 @@ func renderWithGlamour(m MdModel, md string) string {
 // This is where the magic happens.
 func glamourRender(m MdModel, markdown string) (string, error) {
 	// initialize glamour
-	gs := glamour.WithAutoStyle()
+	gs := glamour.WithStandardStyle(glamour.DarkStyle)
 
-	// width := max(0, min(int(m.common.cfg.GlamourMaxWidth), m.model.Width))
 	width := m.Viewport.Width
 	r, err := glamour.NewTermRenderer(
 		gs,
