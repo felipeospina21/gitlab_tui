@@ -129,6 +129,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.refetchJobs()
 
 			}
+			m.MergeRequests.PipelineJobs, cmd = m.MergeRequests.PipelineJobs.Update(msg)
 		}
 
 		// Global commands
@@ -177,7 +178,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.resizeMrTable(msg)
 
 		case MrCommentsView:
-			// BUG: After resize, comments table loses its width
 			return m.resizeMrCommentsTable(msg)
 
 		case MrPipelinesView:
@@ -268,7 +268,7 @@ func (m Model) renderTableView(view string, title string, footer string) string 
 	)
 }
 
-func (m Model) getSelectedMrRow(idx table.TableColIndex, view views) string {
+func (m Model) getSelectedRow(idx table.TableColIndex, view views) string {
 	switch view {
 	case MrTableView:
 		return m.MergeRequests.List.SelectedRow()[idx]
@@ -279,6 +279,9 @@ func (m Model) getSelectedMrRow(idx table.TableColIndex, view views) string {
 	case MrPipelinesView:
 		return m.MergeRequests.Pipeline.SelectedRow()[idx]
 
+	case JobsView:
+		return m.MergeRequests.PipelineJobs.SelectedRow()[idx]
+
 	default:
 		return ""
 
@@ -286,5 +289,5 @@ func (m Model) getSelectedMrRow(idx table.TableColIndex, view views) string {
 }
 
 func (m *Model) setSelectedMr() {
-	m.MergeRequests.SelectedMr = m.getSelectedMrRow(table.MergeReqsCols.Title.Idx, MrTableView)
+	m.MergeRequests.SelectedMr = m.getSelectedRow(table.MergeReqsCols.Title.Idx, MrTableView)
 }

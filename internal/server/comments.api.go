@@ -21,7 +21,7 @@ type GetMergeRequestCommentsResponse = struct {
 	Resolved  bool   `json:"resolved"`
 }
 
-func GetMergeRequestComments(mrID string, projectID string) ([]table.Row, error) {
+func GetMergeRequestComments(projectID string, mrID string) ([]table.Row, error) {
 	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.Config.BaseURL, config.Config.APIVersion, projectID, mrID)
 	token := config.Config.APIToken
 	mrURLParams := []string{"order_by=updated_at"}

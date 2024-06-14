@@ -24,7 +24,9 @@ var PipelineJobsCols = pipelineJobsTable{
 	URL:       TableCol{Idx: 7, Name: "URL"},
 }
 
-var PipelineJobsIconCols = []int{}
+var PipelineJobsIconCols = []int{
+	int(PipelineJobsCols.Status.Idx),
+}
 
 func GetPipelineJobsColums(width int) []Column {
 	id := 0

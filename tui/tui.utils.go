@@ -19,7 +19,13 @@ func (m *Model) resizeMrTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 		StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.MergeReqsIconCols),
 	})
 
-	newM := m.UpdateModel(t, table.Model{}, table.Model{}, m.Projects.List, table.Model{})
+	newM := m.UpdateModel(
+		t,
+		table.Model{},
+		table.Model{},
+		m.Projects.List,
+		table.Model{},
+	)
 
 	return newM, func() tea.Msg {
 		return tea.ClearScreen()
@@ -35,7 +41,13 @@ func (m *Model) resizeMrCommentsTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 		StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.CommentsIconCols),
 	})
 
-	newM := m.UpdateModel(m.MergeRequests.List, t, m.MergeRequests.Pipeline, m.Projects.List, m.MergeRequests.PipelineJobs)
+	newM := m.UpdateModel(
+		m.MergeRequests.List,
+		t,
+		m.MergeRequests.Pipeline,
+		m.Projects.List,
+		m.MergeRequests.PipelineJobs,
+	)
 
 	return newM, func() tea.Msg {
 		return tea.ClearScreen()
@@ -51,7 +63,13 @@ func (m *Model) resizeMrPipelinesTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 		StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.PipelinesIconCols),
 	})
 
-	newM := m.UpdateModel(m.MergeRequests.List, m.MergeRequests.Comments, t, m.Projects.List, m.MergeRequests.PipelineJobs)
+	newM := m.UpdateModel(
+		m.MergeRequests.List,
+		m.MergeRequests.Comments,
+		t,
+		m.Projects.List,
+		m.MergeRequests.PipelineJobs,
+	)
 
 	return newM, func() tea.Msg {
 		return tea.ClearScreen()
@@ -66,15 +84,36 @@ func (m *Model) resizePipelineJobsTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) 
 		Colums: table.GetPipelineJobsColums(msg.Width - 10),
 	})
 
-	newM := m.UpdateModel(m.MergeRequests.List, m.MergeRequests.Comments, t, m.Projects.List, t)
+	newM := m.UpdateModel(
+		m.MergeRequests.List,
+		m.MergeRequests.Comments,
+		m.MergeRequests.Pipeline,
+		m.Projects.List,
+		t,
+	)
 
 	return newM, func() tea.Msg {
 		return tea.ClearScreen()
 	}
 }
 
+func (m *Model) resizeProjectsList(msg tea.WindowSizeMsg) {
+	l := InitProjectsList()
+
+	newM := m.UpdateModel(
+		m.MergeRequests.List,
+		m.MergeRequests.Comments,
+		m.MergeRequests.Pipeline,
+		l,
+		m.MergeRequests.PipelineJobs,
+	)
+
+	m.Projects.List = newM.Projects.List
+	m.Projects.List.SetSize(msg.Width, msg.Height)
+}
+
 func (m *Model) resizeMdView(msg tea.WindowSizeMsg) {
-	headerHeight := lipgloss.Height(m.headerView(m.getSelectedMrRow(table.MergeReqsCols.Title.Idx, MrTableView)))
+	headerHeight := lipgloss.Height(m.headerView(m.getSelectedRow(table.MergeReqsCols.Title.Idx, MrTableView)))
 	footerHeight := lipgloss.Height(m.footerView())
 	verticalMarginHeight := headerHeight + footerHeight
 	m.Md.Viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
@@ -82,22 +121,15 @@ func (m *Model) resizeMdView(msg tea.WindowSizeMsg) {
 	var content string
 	switch m.PrevView {
 	case MrTableView:
-		content = m.getSelectedMrRow(table.MergeReqsCols.Desc.Idx, MrTableView)
+		content = m.getSelectedRow(table.MergeReqsCols.Desc.Idx, MrTableView)
 
 	case MrCommentsView:
-		content = m.getSelectedMrRow(table.CommentsCols.Body.Idx, MrCommentsView)
+		content = m.getSelectedRow(table.CommentsCols.Body.Idx, MrCommentsView)
 
 	default:
 		content = "Model not selected"
 	}
 	m.setResponseContent(content)
-}
-
-func (m *Model) resizeProjectsList(msg tea.WindowSizeMsg) {
-	l := InitProjectsList()
-	newM := m.UpdateModel(m.MergeRequests.List, m.MergeRequests.Comments, m.MergeRequests.Pipeline, l, m.MergeRequests.PipelineJobs)
-	m.Projects.List = newM.Projects.List
-	m.Projects.List.SetSize(msg.Width, msg.Height)
 }
 
 func (m Model) UpdateModel(listModel table.Model, commentsModel table.Model, pipelinesModel table.Model, projectsModel list.Model, jobsModel table.Model) Model {
@@ -110,6 +142,7 @@ func (m Model) UpdateModel(listModel table.Model, commentsModel table.Model, pip
 			ListKeys:     MergeReqsKeys,
 			CommentsKeys: CommentsKeys,
 			PipelineKeys: PipelinKeys,
+			JobsKeys:     JobsKeys,
 		},
 		Projects: ProjectsModel{
 			List:      projectsModel,
@@ -118,6 +151,7 @@ func (m Model) UpdateModel(listModel table.Model, commentsModel table.Model, pip
 		CurrView: m.CurrView,
 		Md:       m.Md,
 		Help:     m.Help,
+		Window:   tea.WindowSizeMsg{Width: m.Window.Width, Height: m.Window.Height},
 	}
 
 	return newM

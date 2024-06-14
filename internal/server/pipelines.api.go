@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab_tui/config"
+	"gitlab_tui/internal/icon"
 	"gitlab_tui/internal/logger"
 	"gitlab_tui/tui/components/table"
 	"strconv"
@@ -18,7 +19,7 @@ type GetMergeRequestPipelinesResponse = struct {
 	URL       string `json:"web_url"`
 }
 
-func GetMergeRequestPipelines(mrID string, projectID string) ([]table.Row, error) {
+func GetMergeRequestPipelines(projectID string, mrID string) ([]table.Row, error) {
 	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/pipelines", config.Config.BaseURL, config.Config.APIVersion, projectID, mrID)
 	token := config.Config.APIToken
 
@@ -89,11 +90,11 @@ func GetPipelineJobs(projectID string, pipelineID string) ([]table.Row, error) {
 		n := table.Row{
 			strconv.Itoa(item.ID),
 			createdAt,
-			item.Status,
+			checkJobStatus(item.Status),
 			item.Name,
 			item.Stage,
-			fmt.Sprintf("%f", item.Duration),
-			fmt.Sprintf("%f", item.Coverage),
+			table.FormatDuration(item.Duration),
+			table.FormatPercentage(item.Coverage),
 			item.URL,
 		}
 		rows = append(rows, n)
@@ -101,4 +102,28 @@ func GetPipelineJobs(projectID string, pipelineID string) ([]table.Row, error) {
 	}
 
 	return rows, nil
+}
+
+// created,
+// pending,
+// running,
+// failed,
+// success,
+// canceled,
+// skipped,
+// waiting_for_resource,
+// manual
+func checkJobStatus(status string) string {
+	s := map[string]string{
+		"created":              icon.CircleDot,
+		"pending":              icon.Circle,
+		"running":              icon.CirclePlay,
+		"failed":               icon.CircleCross,
+		"success":              icon.CircleCheck,
+		"canceled":             icon.CircleDash,
+		"skipped":              icon.CircleSkip,
+		"waiting_for_resource": icon.CircleQuestion,
+		"manual":               icon.Gear,
+	}
+	return s[status]
 }

@@ -155,8 +155,8 @@ var PipelinKeys = PipelineKeyMap{
 		key.WithHelp("backspace", "navigate back"),
 	),
 	Jobs: key.NewBinding(
-		key.WithKeys("j"),
-		key.WithHelp("j", "view jobs"),
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "view jobs"),
 	),
 	GlobalKeyMap: GlobalKeys,
 }
@@ -179,7 +179,7 @@ func (k JobsKeyMap) FullHelp() [][]key.Binding {
 	}
 }
 
-var JobsKeys = PipelineKeyMap{
+var JobsKeys = JobsKeyMap{
 	OpenInBrowser: key.NewBinding(
 		key.WithKeys("x"),
 		key.WithHelp("x", "open in browser"),

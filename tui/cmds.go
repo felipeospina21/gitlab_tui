@@ -7,12 +7,16 @@ import (
 	"gitlab_tui/internal/server"
 	"gitlab_tui/internal/style"
 	"gitlab_tui/tui/components/table"
+	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m *Model) openInBrowser(tableColIdx table.TableColIndex, view views) {
-	selectedURL := m.getSelectedMrRow(tableColIdx, view)
+	selectedURL := m.getSelectedRow(tableColIdx, view)
+	logger.Debug("url", func() {
+		log.Print(selectedURL, tableColIdx, view)
+	})
 	exec.Openbrowser(selectedURL)
 }
 
@@ -27,14 +31,14 @@ func (m *Model) refetchMrList() {
 }
 
 func (m *Model) viewDescription() {
-	content := string(m.getSelectedMrRow(table.MergeReqsCols.Desc.Idx, MrTableView))
+	content := string(m.getSelectedRow(table.MergeReqsCols.Desc.Idx, MrTableView))
 	m.setResponseContent(content)
 	m.PrevView = MrTableView
 	m.CurrView = MdView
 }
 
 func (m *Model) viewComments() tea.Cmd {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(table.MergeReqsCols.ID.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestComments(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -47,7 +51,7 @@ func (m *Model) viewComments() tea.Cmd {
 }
 
 func (m *Model) viewPipelines() tea.Cmd {
-	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(table.MergeReqsCols.ID.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestPipelines(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -59,7 +63,7 @@ func (m *Model) viewPipelines() tea.Cmd {
 }
 
 func (m *Model) mergeMR() tea.Cmd {
-	statusCode, err := server.MergeMR(m.Projects.ProjectID, m.getSelectedMrRow(table.MergeReqsCols.ID.Idx, MrTableView))
+	statusCode, err := server.MergeMR(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
 	c := func() tea.Msg {
 		if err != nil {
 			logger.Error(err)
@@ -87,9 +91,8 @@ func (m *Model) mergeMR() tea.Cmd {
 }
 
 // Comments Table
-// BUG: Not working
 func (m *Model) refetchComments() {
-	r, err := server.GetMergeRequestComments(m.getSelectedMrRow(table.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestComments(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
 	if err != nil {
 		logger.Error(err)
 	}
@@ -97,22 +100,21 @@ func (m *Model) refetchComments() {
 }
 
 func (m *Model) viewCommentContent() {
-	content := string(m.getSelectedMrRow(table.CommentsCols.Body.Idx, MrCommentsView))
+	content := string(m.getSelectedRow(table.CommentsCols.Body.Idx, MrCommentsView))
 	m.setResponseContent(content)
 	m.PrevView = MrCommentsView
 	m.CurrView = MdView
 }
 
 func (m *Model) navigateToMrComment() {
-	selectedURL := m.getSelectedMrRow(table.MergeReqsCols.URL.Idx, MrTableView)
-	commentID := m.getSelectedMrRow(table.CommentsCols.ID.Idx, MrCommentsView)
+	selectedURL := m.getSelectedRow(table.MergeReqsCols.URL.Idx, MrTableView)
+	commentID := m.getSelectedRow(table.CommentsCols.ID.Idx, MrCommentsView)
 	exec.Openbrowser(fmt.Sprintf("%s#note_%s", selectedURL, commentID))
 }
 
 // Pipelines Table
-// BUG: working weird
 func (m *Model) refetchPipelines() {
-	r, err := server.GetMergeRequestPipelines(m.getSelectedMrRow(table.MergeReqsCols.CreatedAd.Idx, MrTableView), m.Projects.ProjectID)
+	r, err := server.GetMergeRequestPipelines(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
 	if err != nil {
 		logger.Error(err)
 	}
@@ -120,7 +122,7 @@ func (m *Model) refetchPipelines() {
 }
 
 func (m *Model) viewPipelineJobs() tea.Cmd {
-	r, err := server.GetPipelineJobs(m.Projects.ProjectID, m.getSelectedMrRow(table.PipelinesCols.ID.Idx, MrPipelinesView))
+	r, err := server.GetPipelineJobs(m.Projects.ProjectID, m.getSelectedRow(table.PipelinesCols.ID.Idx, MrPipelinesView))
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -156,9 +158,8 @@ func (m *Model) viewMergeReqs(window tea.WindowSizeMsg) tea.Cmd {
 }
 
 // Jobs Table
-// BUG: Not working
 func (m *Model) refetchJobs() {
-	r, err := server.GetPipelineJobs(m.Projects.ProjectID, m.getSelectedMrRow(table.PipelinesCols.ID.Idx, MrPipelinesView))
+	r, err := server.GetPipelineJobs(m.Projects.ProjectID, m.getSelectedRow(table.PipelinesCols.ID.Idx, MrPipelinesView))
 	if err != nil {
 		logger.Error(err)
 	}

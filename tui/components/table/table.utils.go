@@ -49,6 +49,14 @@ func StyleIconsColumns(s Styles, iconColIdx []int) StyleFunc {
 				return s.Cell.Foreground(lipgloss.Color(style.Green[300]))
 			case icon.Clock:
 				return s.Cell.Foreground(lipgloss.Color(style.Yellow[300]))
+			case icon.CircleCheck:
+				return s.Cell.Foreground(lipgloss.Color(style.Green[300]))
+			case icon.CircleCross:
+				return s.Cell.Foreground(lipgloss.Color(style.Red[300]))
+			case icon.CirclePlay:
+				return s.Cell.Foreground(lipgloss.Color(style.Violet[400]))
+			case icon.Gear:
+				return s.Cell.Foreground(lipgloss.Color(style.Yellow[100]))
 
 			}
 		}
@@ -85,5 +93,28 @@ func FormatTime(d string) string {
 
 	default:
 		return fmt.Sprintf("%.0f s", r.Seconds())
+	}
+}
+
+func FormatPercentage(v float32) string {
+	if v == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf("%.2f %%", v)
+}
+
+func FormatDuration(d float32) string {
+	seconds := d / 60.0
+
+	x := time.Duration(d * float32(time.Second))
+
+	switch {
+	case seconds > 0:
+		return fmt.Sprintf("%.0f m", x.Minutes())
+	case seconds < 0:
+		return fmt.Sprintf("%.0f m", x.Minutes())
+	default:
+		return ""
 	}
 }
