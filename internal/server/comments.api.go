@@ -27,7 +27,7 @@ func GetMergeRequestComments(mrID string, projectID string) ([]table.Row, error)
 	mrURLParams := []string{"order_by=updated_at"}
 	params := "?" + strings.Join(mrURLParams, "&")
 
-	responseData, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
+	responseData, _, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
 	if err != nil {
 		logger.Error(err)
 		return nil, err

@@ -31,7 +31,7 @@ func GetMergeRequests(projectID string) ([]table.Row, error) {
 	mrURLParams := []string{"state=opened"}
 	params := "?" + strings.Join(mrURLParams, "&")
 
-	responseData, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
+	responseData, _, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
 	if err != nil {
 		logger.Error(err)
 		return nil, err
@@ -63,6 +63,21 @@ func GetMergeRequests(projectID string) ([]table.Row, error) {
 	}
 
 	return rows, nil
+}
+
+func MergeMR(projectID string, mergeReqIDD string) (int, error) {
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/merge", config.Config.BaseURL, config.Config.APIVersion, projectID, mergeReqIDD)
+	token := config.Config.APIToken
+	mrURLParams := []string{"should_remove_source_branch=true", "squash=true"}
+	params := "?" + strings.Join(mrURLParams, "&")
+
+	_, statusCode, err := fetchData(url, fetchConfig{method: "PUT", params: params, token: token})
+	if err != nil {
+		logger.Error(err)
+		return statusCode, err
+	}
+
+	return statusCode, nil
 }
 
 // approvals_syncing: The merge request’s approvals are syncing.

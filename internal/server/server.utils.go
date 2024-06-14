@@ -14,7 +14,7 @@ type fetchConfig struct {
 	token  string
 }
 
-func fetchData(url string, config fetchConfig) ([]byte, error) {
+func fetchData(url string, config fetchConfig) ([]byte, int, error) {
 	req, err := http.NewRequest(config.method, url+config.params, nil)
 	if err != nil {
 		fmt.Print(err.Error())
@@ -30,7 +30,7 @@ func fetchData(url string, config fetchConfig) ([]byte, error) {
 	defer res.Body.Close()
 
 	responseData, err := io.ReadAll(res.Body)
-	return responseData, err
+	return responseData, res.StatusCode, err
 }
 
 func renderIcon(b bool) string {

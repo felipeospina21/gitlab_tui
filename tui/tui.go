@@ -32,6 +32,7 @@ const (
 	MrTableView views = iota
 	MrCommentsView
 	MrPipelinesView
+	JobsView
 	MdView
 	ProjectsView
 	TabsView
@@ -55,7 +56,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Help.Model.ShowAll = !m.Help.Model.ShowAll
 
 			case key.Matches(msg, m.MergeRequests.ListKeys.OpenInBrowser):
-				m.navigateToMr()
+				m.openInBrowser(table.MergeReqsCols.URL.Idx, MrTableView)
 
 			case key.Matches(msg, m.MergeRequests.ListKeys.Comments):
 				c := m.viewComments()
@@ -63,6 +64,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case key.Matches(msg, m.MergeRequests.ListKeys.Pipelines):
 				c := m.viewPipelines()
+				cmds = append(cmds, c)
+
+			case key.Matches(msg, m.MergeRequests.ListKeys.Merge):
+				c := m.mergeMR()
 				cmds = append(cmds, c)
 
 			case key.Matches(msg, m.MergeRequests.ListKeys.Description):
@@ -76,6 +81,54 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			}
 			m.MergeRequests.List, cmd = m.MergeRequests.List.Update(msg)
+
+		case MrCommentsView:
+			switch {
+			case key.Matches(msg, m.MergeRequests.CommentsKeys.Refetch):
+				m.refetchComments()
+
+			case key.Matches(msg, m.MergeRequests.CommentsKeys.OpenInBrowser):
+				m.navigateToMrComment()
+
+			case key.Matches(msg, m.MergeRequests.CommentsKeys.Description):
+				m.viewCommentContent()
+
+			case key.Matches(msg, m.MergeRequests.CommentsKeys.NavigateBack):
+				m.CurrView = MrTableView
+
+			}
+			m.MergeRequests.Comments, cmd = m.MergeRequests.Comments.Update(msg)
+
+		case MrPipelinesView:
+			switch {
+			case key.Matches(msg, m.MergeRequests.PipelineKeys.Jobs):
+				c := m.viewPipelineJobs()
+				cmds = append(cmds, c)
+
+			case key.Matches(msg, m.MergeRequests.PipelineKeys.Refetch):
+				m.refetchPipelines()
+
+			case key.Matches(msg, m.MergeRequests.PipelineKeys.OpenInBrowser):
+				m.openInBrowser(table.PipelinesCols.URL.Idx, MrPipelinesView)
+
+			case key.Matches(msg, m.MergeRequests.PipelineKeys.NavigateBack):
+				m.CurrView = MrTableView
+
+			}
+			m.MergeRequests.Pipeline, cmd = m.MergeRequests.Pipeline.Update(msg)
+
+		case JobsView:
+			switch {
+			case key.Matches(msg, m.MergeRequests.JobsKeys.NavigateBack):
+				m.CurrView = MrPipelinesView
+
+			case key.Matches(msg, m.MergeRequests.JobsKeys.OpenInBrowser):
+				m.openInBrowser(table.PipelineJobsCols.URL.Idx, JobsView)
+
+			case key.Matches(msg, m.MergeRequests.JobsKeys.Refetch):
+				m.refetchJobs()
+
+			}
 		}
 
 		// Global commands
@@ -101,39 +154,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, c)
 			}
 			m.Projects.List, cmd = m.Projects.List.Update(msg)
-
-		case MrCommentsView:
-			switch msg.String() {
-			case "r":
-				m.refetchComments()
-
-			case "x":
-				m.navigateToMrComment()
-
-			case "enter":
-				m.viewCommentContent()
-
-			case "backspace":
-				m.CurrView = MrTableView
-
-			}
-
-			m.MergeRequests.Comments, cmd = m.MergeRequests.Comments.Update(msg)
-
-		case MrPipelinesView:
-			switch msg.String() {
-			case "r":
-				m.refetchPipelines()
-
-			case "x":
-				m.navigateToPipeline()
-
-			case "backspace":
-				m.CurrView = MrTableView
-
-			}
-
-			m.MergeRequests.Pipeline, cmd = m.MergeRequests.Pipeline.Update(msg)
 
 		case MdView:
 			switch msg.String() {
@@ -163,22 +183,39 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case MrPipelinesView:
 			return m.resizeMrPipelinesTable(msg)
 
+		case JobsView:
+			return m.resizePipelineJobsTable(msg)
+
 		case MdView:
 			m.resizeMdView(msg)
 
 		}
 
 	case string:
-		if msg == "success_mergeReqs" {
+		switch msg {
+		case "success_mergeReqs":
 			m.CurrView = MrTableView
-		}
-		if msg == "success_comments" {
+
+		case "success_comments":
 			m.CurrView = MrCommentsView
 			m.setSelectedMr()
-		}
-		if msg == "success_pipelines" {
+
+		case "success_pipelines":
 			m.CurrView = MrPipelinesView
 			m.setSelectedMr()
+
+		case "success_jobs":
+			m.CurrView = JobsView
+			// m.MergeRequests.PipelineJobs.SelectedRow()[table.PipelineJobsCols.Name.Idx]
+			// m.setSelectedMr()
+
+		case "merge_unauthorized":
+		case "merge_branch_cant_be_merged":
+		case "merge_method_not_allowed":
+		case "merge_error_in_sha":
+			m.setResponseContent("Error: " + msg)
+			m.CurrView = MdView
+
 		}
 
 	case error:
@@ -204,6 +241,9 @@ func (m Model) View() string {
 
 	case MrPipelinesView:
 		return m.renderTableView(m.MergeRequests.Pipeline.View(), "Pipelines", m.Help.Model.View(m.MergeRequests.PipelineKeys))
+
+	case JobsView:
+		return m.renderTableView(m.MergeRequests.PipelineJobs.View(), "Jobs", m.Help.Model.View(m.MergeRequests.JobsKeys))
 
 	default:
 		return m.renderTableView(m.MergeRequests.List.View(), "", m.Help.Model.View(m.MergeRequests.ListKeys))

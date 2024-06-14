@@ -19,7 +19,7 @@ func (m *Model) resizeMrTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 		StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.MergeReqsIconCols),
 	})
 
-	newM := m.UpdateModel(t, table.Model{}, table.Model{}, m.Projects.List)
+	newM := m.UpdateModel(t, table.Model{}, table.Model{}, m.Projects.List, table.Model{})
 
 	return newM, func() tea.Msg {
 		return tea.ClearScreen()
@@ -35,7 +35,7 @@ func (m *Model) resizeMrCommentsTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 		StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.CommentsIconCols),
 	})
 
-	newM := m.UpdateModel(m.MergeRequests.List, t, m.MergeRequests.Pipeline, m.Projects.List)
+	newM := m.UpdateModel(m.MergeRequests.List, t, m.MergeRequests.Pipeline, m.Projects.List, m.MergeRequests.PipelineJobs)
 
 	return newM, func() tea.Msg {
 		return tea.ClearScreen()
@@ -51,7 +51,22 @@ func (m *Model) resizeMrPipelinesTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 		StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.PipelinesIconCols),
 	})
 
-	newM := m.UpdateModel(m.MergeRequests.List, m.MergeRequests.Comments, t, m.Projects.List)
+	newM := m.UpdateModel(m.MergeRequests.List, m.MergeRequests.Comments, t, m.Projects.List, m.MergeRequests.PipelineJobs)
+
+	return newM, func() tea.Msg {
+		return tea.ClearScreen()
+	}
+}
+
+func (m *Model) resizePipelineJobsTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
+	m.MergeRequests.PipelineJobs.SetWidth(msg.Width)
+
+	t := table.InitModel(table.InitModelParams{
+		Rows:   m.MergeRequests.PipelineJobs.Rows(),
+		Colums: table.GetPipelineJobsColums(msg.Width - 10),
+	})
+
+	newM := m.UpdateModel(m.MergeRequests.List, m.MergeRequests.Comments, t, m.Projects.List, t)
 
 	return newM, func() tea.Msg {
 		return tea.ClearScreen()
@@ -80,17 +95,18 @@ func (m *Model) resizeMdView(msg tea.WindowSizeMsg) {
 
 func (m *Model) resizeProjectsList(msg tea.WindowSizeMsg) {
 	l := InitProjectsList()
-	newM := m.UpdateModel(m.MergeRequests.List, m.MergeRequests.Comments, m.MergeRequests.Pipeline, l)
+	newM := m.UpdateModel(m.MergeRequests.List, m.MergeRequests.Comments, m.MergeRequests.Pipeline, l, m.MergeRequests.PipelineJobs)
 	m.Projects.List = newM.Projects.List
 	m.Projects.List.SetSize(msg.Width, msg.Height)
 }
 
-func (m Model) UpdateModel(listModel table.Model, commentsModel table.Model, pipelinesModel table.Model, projectsModel list.Model) Model {
+func (m Model) UpdateModel(listModel table.Model, commentsModel table.Model, pipelinesModel table.Model, projectsModel list.Model, jobsModel table.Model) Model {
 	newM := Model{
 		MergeRequests: MergeRequestsModel{
 			List:         listModel,
 			Comments:     commentsModel,
 			Pipeline:     pipelinesModel,
+			PipelineJobs: jobsModel,
 			ListKeys:     MergeReqsKeys,
 			CommentsKeys: CommentsKeys,
 			PipelineKeys: PipelinKeys,
