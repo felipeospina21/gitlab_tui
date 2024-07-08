@@ -5,7 +5,6 @@ import (
 	"gitlab_tui/internal/icon"
 	"io"
 	"net/http"
-	"os"
 )
 
 type fetchConfig struct {
@@ -17,19 +16,25 @@ type fetchConfig struct {
 func fetchData(url string, config fetchConfig) ([]byte, int, error) {
 	req, err := http.NewRequest(config.method, url+config.params, nil)
 	if err != nil {
-		fmt.Print(err.Error())
-		os.Exit(1)
+		return []byte{}, 0, err
 	}
+
 	req.Header.Add("PRIVATE-TOKEN", config.token)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmt.Print(err.Error())
-		os.Exit(1)
+		return []byte{}, 0, err
 	}
+
 	defer res.Body.Close()
 
 	responseData, err := io.ReadAll(res.Body)
+
+	if res.StatusCode != 200 {
+		err = fmt.Errorf("%s", responseData)
+		responseData = nil
+	}
+
 	return responseData, res.StatusCode, err
 }
 

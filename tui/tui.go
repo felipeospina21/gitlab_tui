@@ -1,7 +1,9 @@
 package tui
 
 import (
+	"encoding/json"
 	"fmt"
+	"gitlab_tui/config"
 	"gitlab_tui/internal/logger"
 	"gitlab_tui/internal/style"
 	"gitlab_tui/tui/components"
@@ -26,6 +28,7 @@ type Model struct {
 	Title         string
 	Window        tea.WindowSizeMsg
 	Help          components.Help
+	Keys          GlobalKeyMap
 }
 
 const (
@@ -133,19 +136,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Global commands
-		switch msg.String() {
-		case "esc":
-			if m.MergeRequests.List.Focused() {
-				m.MergeRequests.List.Blur()
-			} else {
-				m.MergeRequests.List.Focus()
-			}
-		case "q", "ctrl+c":
+		switch {
+		case key.Matches(msg, GlobalKeys.Quit):
 			cmds = append(cmds, tea.Quit)
 
-		case "tab":
-			m.CurrView = MdView
+		case key.Matches(msg, GlobalKeys.ReloadConfig):
+			config.Load(&config.Config)
+
 		}
+
+		// switch msg.String() {
+		// case "esc":
+		// 	if m.MergeRequests.List.Focused() {
+		// 		m.MergeRequests.List.Blur()
+		// 	} else {
+		// 		m.MergeRequests.List.Focus()
+		// 	}
+		// case "q", "ctrl+c":
+		// 	cmds = append(cmds, tea.Quit)
+
+		// case "tab":
+		// 	m.CurrView = MdView
+		//
+		// case "C":
+		// 	config.Load(&config.Config)
+
+		// }
 
 		switch m.CurrView {
 		case ProjectsView:
@@ -189,12 +205,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case MdView:
 			m.resizeMdView(msg)
 
+		case ProjectsView:
+			h, v := style.ListItemStyle.GetFrameSize()
+			m.Projects.List.SetSize(msg.Width-h, msg.Height-v)
+
 		}
 
 	case string:
 		switch msg {
 		case "success_mergeReqs":
 			m.CurrView = MrTableView
+			m.MergeRequests.Error = nil
 
 		case "success_comments":
 			m.CurrView = MrCommentsView
@@ -219,19 +240,43 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case error:
-		logger.Debug("error", func() {
+		logger.Debug("error-msg", func() {
 			log.Println(msg)
 		})
+		m.MergeRequests.Error = msg
+		lh, lv := style.ListItemStyle.GetFrameSize()
+		nh, nv := style.ErrorNotification(m.Window.Height, m.Window.Width).GetFrameSize()
+
+		h := (lh + nh) * 2
+		v := (lv + nv) * 2
+
+		m.Projects.List.SetSize(m.Window.Width-h, m.Window.Height-v)
 
 	}
 	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
 }
 
+type ResponseError struct {
+	Message string `json:"message"`
+}
+
 func (m Model) View() string {
 	switch m.CurrView {
 	case ProjectsView:
+		if m.MergeRequests.Error != nil {
+			var e ResponseError
+			json.Unmarshal([]byte(m.MergeRequests.Error.Error()), &e)
+
+			errorMsg := style.ErrorNotification(m.Window.Height, m.Window.Width).Render(e.Message)
+			projects := style.ListItemStyle.Render(m.Projects.List.View())
+			return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Left), errorMsg, projects)
+		}
 		return style.ListItemStyle.Render(m.Projects.List.View())
+		// projects := style.ListItemStyle.Render(m.Projects.List.View())
+		// help := style.HelpStyle.Render(m.Help.Model.View(GlobalKeys))
+		//
+		// return lipgloss.JoinVertical(0, projects, help)
 
 	case MdView:
 		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[table.MergeReqsCols.Title.Idx]), m.Md.Viewport.View(), m.footerView())

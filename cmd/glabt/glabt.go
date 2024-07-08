@@ -30,10 +30,15 @@ func InitModel() tui.Model {
 	l := tui.InitProjectsList()
 
 	newM := tui.Model{
-		Projects:      tui.ProjectsModel{List: l},
-		CurrView:      tui.ProjectsView,
-		Help:          components.Help{Model: help.New()},
-		MergeRequests: tui.MergeRequestsModel{ListKeys: tui.MergeReqsKeys, CommentsKeys: tui.CommentsKeys, PipelineKeys: tui.PipelinKeys, JobsKeys: tui.JobsKeys},
+		Projects: tui.ProjectsModel{List: l},
+		CurrView: tui.ProjectsView,
+		Help:     components.Help{Model: help.New()},
+		MergeRequests: tui.MergeRequestsModel{
+			ListKeys:     tui.MergeReqsKeys,
+			CommentsKeys: tui.CommentsKeys,
+			PipelineKeys: tui.PipelinKeys,
+			JobsKeys:     tui.JobsKeys,
+		},
 	}
 	return newM
 }

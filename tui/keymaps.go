@@ -1,19 +1,23 @@
 package tui
 
-import "github.com/charmbracelet/bubbles/key"
+import (
+	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/list"
+)
 
 type GlobalKeyMap struct {
-	Help key.Binding
-	Quit key.Binding
+	Help         key.Binding
+	Quit         key.Binding
+	ReloadConfig key.Binding
 }
 
 func (k GlobalKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit}
+	return []key.Binding{k.Help, k.Quit, k.ReloadConfig}
 }
 
 func (k GlobalKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		// {k.Up, k.Down, k.Left, k.Right}, // first column
+		{k.ReloadConfig}, // first column
 		{k.Help, k.Quit}, // second column
 	}
 }
@@ -26,6 +30,10 @@ var GlobalKeys = GlobalKeyMap{
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
 		key.WithHelp("q", "quit"),
+	),
+	ReloadConfig: key.NewBinding(
+		key.WithKeys("C"),
+		key.WithHelp("C", "reload config"),
 	),
 }
 
@@ -41,13 +49,13 @@ type MergeReqsKeyMap struct {
 }
 
 func (k MergeReqsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.Comments, k.Pipelines, k.Description, k.Refetch, k.OpenInBrowser, k.NavigateBack}
+	return []key.Binding{k.Help, k.Quit, k.Comments, k.Pipelines, k.Description, k.Refetch, k.OpenInBrowser, k.NavigateBack, k.ReloadConfig, k.Merge}
 }
 
 func (k MergeReqsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Comments, k.Pipelines, k.Description, k.Refetch, k.OpenInBrowser, k.NavigateBack}, // first column
-		{k.Help, k.Quit}, // second column
+		{k.Merge, k.ReloadConfig, k.Help, k.Quit},                                            // second column
 	}
 }
 
@@ -92,13 +100,13 @@ type CommentsKeyMap struct {
 }
 
 func (k CommentsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.Description, k.NavigateBack, k.OpenInBrowser, k.Refetch}
+	return []key.Binding{k.Help, k.Quit, k.Description, k.NavigateBack, k.OpenInBrowser, k.Refetch, k.ReloadConfig}
 }
 
 func (k CommentsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Description, k.NavigateBack, k.OpenInBrowser, k.Refetch}, // first column
-		{k.Help, k.Quit}, // second column
+		{k.ReloadConfig, k.Help, k.Quit},                            // second column
 	}
 }
 
@@ -131,13 +139,13 @@ type PipelineKeyMap struct {
 }
 
 func (k PipelineKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.Jobs, k.NavigateBack, k.OpenInBrowser, k.Refetch}
+	return []key.Binding{k.Help, k.Quit, k.Jobs, k.NavigateBack, k.OpenInBrowser, k.Refetch, k.ReloadConfig}
 }
 
 func (k PipelineKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Jobs, k.NavigateBack, k.OpenInBrowser, k.Refetch}, // first column
-		{k.Help, k.Quit}, // second column
+		{k.ReloadConfig, k.Help, k.Quit},                     // second column
 	}
 }
 
@@ -169,13 +177,13 @@ type JobsKeyMap struct {
 }
 
 func (k JobsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.NavigateBack, k.OpenInBrowser, k.Refetch}
+	return []key.Binding{k.Help, k.Quit, k.NavigateBack, k.OpenInBrowser, k.Refetch, k.ReloadConfig}
 }
 
 func (k JobsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.NavigateBack, k.OpenInBrowser, k.Refetch}, // first column
-		{k.Help, k.Quit}, // second column
+		{k.ReloadConfig, k.Help, k.Quit},             // second column
 	}
 }
 
@@ -193,4 +201,28 @@ var JobsKeys = JobsKeyMap{
 		key.WithHelp("backspace", "navigate back"),
 	),
 	GlobalKeyMap: GlobalKeys,
+}
+
+type ProjectsKeyMap struct {
+	ReloadConfig key.Binding
+	list.KeyMap
+}
+
+func (k ProjectsKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.ShowFullHelp, k.Quit, k.Filter, k.ReloadConfig}
+}
+
+func (k ProjectsKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.ReloadConfig}, // first column
+		{k.ShowFullHelp, k.Quit, k.Filter, k.ReloadConfig}, // second column
+	}
+}
+
+var ProjectsKeys = ProjectsKeyMap{
+	ReloadConfig: key.NewBinding(
+		key.WithKeys("C"),
+		key.WithHelp("C", "reload config"),
+	),
+	KeyMap: list.DefaultKeyMap(),
 }

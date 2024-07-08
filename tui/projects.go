@@ -118,8 +118,8 @@ func InitProjectsList() list.Model {
 		item{title: "Planning-Tool", id: "58799"},
 	}
 
-	l := list.New(items, itemDelegate{ShowDescription: true, Styles: style.NewDefaultItemStyles()}, 362, 50)
-	// l := list.New(items, newItemDelegate(), 362, 50)
+	l := list.New(items, itemDelegate{ShowDescription: true, Styles: style.NewDefaultItemStyles()}, 0, 0)
+	// l.SetShowHelp(false)
 	l.Title = "Disney Projects"
 	l.Styles.Title = style.ListItemStyle
 	l.Styles.PaginationStyle = style.ListPaginationStyle
