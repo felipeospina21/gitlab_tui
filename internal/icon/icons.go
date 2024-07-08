@@ -11,6 +11,7 @@ const (
 	Rebase         = " "
 	Edit           = " "
 	Discussion     = " "
+	Gear           = " "
 	Empty          = ""
 	CircleCheck    = " "
 	CircleCross    = " "
@@ -21,5 +22,4 @@ const (
 	CircleSkip     = " "
 	CircleQuestion = " "
 	Circle         = " "
-	Gear           = " "
 )
