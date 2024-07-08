@@ -145,24 +145,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		}
 
-		// switch msg.String() {
-		// case "esc":
-		// 	if m.MergeRequests.List.Focused() {
-		// 		m.MergeRequests.List.Blur()
-		// 	} else {
-		// 		m.MergeRequests.List.Focus()
-		// 	}
-		// case "q", "ctrl+c":
-		// 	cmds = append(cmds, tea.Quit)
-
-		// case "tab":
-		// 	m.CurrView = MdView
-		//
-		// case "C":
-		// 	config.Load(&config.Config)
-
-		// }
-
 		switch m.CurrView {
 		case ProjectsView:
 			switch msg.String() {
@@ -207,7 +189,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case ProjectsView:
 			h, v := style.ListItemStyle.GetFrameSize()
-			m.Projects.List.SetSize(msg.Width-h, msg.Height-v)
+			m.Projects.List.SetSize(msg.Width-h, (msg.Height-v)/2)
 
 		}
 
@@ -243,6 +225,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		logger.Debug("error-msg", func() {
 			log.Println(msg)
 		})
+
+		// TODO: Remove error banner after time/action
+
 		m.MergeRequests.Error = msg
 		lh, lv := style.ListItemStyle.GetFrameSize()
 		nh, nv := style.ErrorNotification(m.Window.Height, m.Window.Width).GetFrameSize()
@@ -264,15 +249,12 @@ type ResponseError struct {
 func (m Model) View() string {
 	switch m.CurrView {
 	case ProjectsView:
-		if m.MergeRequests.Error != nil {
-			var e ResponseError
-			json.Unmarshal([]byte(m.MergeRequests.Error.Error()), &e)
+		projects := style.ListItemStyle.Render(m.Projects.List.View())
 
-			errorMsg := style.ErrorNotification(m.Window.Height, m.Window.Width).Render(e.Message)
-			projects := style.ListItemStyle.Render(m.Projects.List.View())
-			return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Left), errorMsg, projects)
+		if m.MergeRequests.Error != nil {
+			return m.getErrorMessage(projects)
 		}
-		return style.ListItemStyle.Render(m.Projects.List.View())
+		return projects
 		// projects := style.ListItemStyle.Render(m.Projects.List.View())
 		// help := style.HelpStyle.Render(m.Help.Model.View(GlobalKeys))
 		//
@@ -305,12 +287,18 @@ func (m Model) renderTableView(view string, title string, footer string) string 
 	} else {
 		t = fmt.Sprintf("%s - Merge Request %s | %s", project, title, m.MergeRequests.SelectedMr)
 	}
-	return lipgloss.JoinVertical(
+	table := lipgloss.JoinVertical(
 		0,
 		style.TableTitle.Render(t),
 		style.Base.Render(view)+"\n",
 		style.HelpStyle.Render(footer),
 	)
+
+	if m.MergeRequests.Error != nil {
+		return m.getErrorMessage(table)
+	}
+
+	return table
 }
 
 func (m Model) getSelectedRow(idx table.TableColIndex, view views) string {
@@ -335,4 +323,13 @@ func (m Model) getSelectedRow(idx table.TableColIndex, view views) string {
 
 func (m *Model) setSelectedMr() {
 	m.MergeRequests.SelectedMr = m.getSelectedRow(table.MergeReqsCols.Title.Idx, MrTableView)
+}
+
+func (m Model) getErrorMessage(view string) string {
+	var e ResponseError
+	json.Unmarshal([]byte(m.MergeRequests.Error.Error()), &e)
+
+	errorMsg := style.ErrorNotification(m.Window.Height, m.Window.Width).Render(e.Message)
+
+	return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Left), errorMsg, view)
 }

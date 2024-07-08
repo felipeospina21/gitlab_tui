@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab_tui/config"
-	"gitlab_tui/internal/logger"
 	"gitlab_tui/tui/components/table"
 	"strconv"
 	"strings"
@@ -29,13 +28,11 @@ func GetMergeRequestComments(projectID string, mrID string) ([]table.Row, error)
 
 	responseData, _, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
 	if err != nil {
-		logger.Error(err)
 		return nil, err
 	}
 
 	var r []GetMergeRequestCommentsResponse
 	if err = json.Unmarshal(responseData, &r); err != nil {
-		logger.Error(err)
 		return nil, err
 	}
 

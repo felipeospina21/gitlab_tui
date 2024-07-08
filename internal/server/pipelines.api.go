@@ -25,13 +25,11 @@ func GetMergeRequestPipelines(projectID string, mrID string) ([]table.Row, error
 
 	responseData, _, err := fetchData(url, fetchConfig{method: "GET", params: "", token: token})
 	if err != nil {
-		logger.Error(err)
 		return nil, err
 	}
 
 	var r []GetMergeRequestPipelinesResponse
 	if err = json.Unmarshal(responseData, &r); err != nil {
-		logger.Error(err)
 		return nil, err
 	}
 
