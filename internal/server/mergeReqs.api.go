@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gitlab_tui/config"
 	"gitlab_tui/internal/icon"
-	"gitlab_tui/internal/logger"
 	"gitlab_tui/tui/components/table"
 	"strconv"
 	"strings"
@@ -71,7 +70,6 @@ func MergeMR(projectID string, mergeReqIDD string) (int, error) {
 
 	_, statusCode, err := fetchData(url, fetchConfig{method: "PUT", params: params, token: token})
 	if err != nil {
-		logger.Error(err)
 		return statusCode, err
 	}
 
