@@ -2,25 +2,32 @@ package exec
 
 import (
 	"fmt"
-	"log"
+	"gitlab_tui/internal/logger"
 	"os/exec"
 	"runtime"
 )
 
 func Openbrowser(url string) {
 	var err error
+	var cmd *exec.Cmd
 
 	switch runtime.GOOS {
 	case "linux":
-		err = exec.Command("xdg-open", url).Start()
+		cmd = exec.Command("xdg-open", url)
 	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
 	case "darwin":
-		err = exec.Command("open", url).Start()
+		cmd = exec.Command("open", url)
 	default:
-		err = fmt.Errorf("unsupported platform")
+		logger.Error(fmt.Errorf("unsupported platform"))
 	}
+
+	err = cmd.Start()
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
+	}
+	err = cmd.Wait()
+	if err != nil {
+		logger.Error(err)
 	}
 }
