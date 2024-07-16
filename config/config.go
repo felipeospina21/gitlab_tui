@@ -5,6 +5,7 @@ import (
 	"gitlab_tui/internal/logger"
 	"log"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
 
@@ -34,6 +35,13 @@ func Load(configObj *config) {
 	if err != nil {
 		panic(fmt.Errorf("fatal error unmarshal: %w", err))
 	}
+
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		logger.Debug("config", func() {
+			log.Println("Config file changed:", e.Name)
+		})
+	})
+	viper.WatchConfig()
 
 	// Env vars
 	e := viper.BindEnv("glabt_token")
