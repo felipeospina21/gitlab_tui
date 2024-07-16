@@ -11,7 +11,6 @@ type MergeRequestsModel struct {
 	Pipeline     table.Model
 	PipelineJobs table.Model
 	SelectedMr   string
-	Error        error
 	ListKeys     MergeReqsKeyMap
 	CommentsKeys CommentsKeyMap
 	PipelineKeys PipelineKeyMap

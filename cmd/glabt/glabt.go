@@ -5,6 +5,8 @@ import (
 	"gitlab_tui/config"
 	"gitlab_tui/tui"
 	"gitlab_tui/tui/components"
+	"gitlab_tui/tui/components/progress"
+	"gitlab_tui/tui/components/toast"
 	"os"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -39,6 +41,18 @@ func InitModel() tui.Model {
 			PipelineKeys: tui.PipelinKeys,
 			JobsKeys:     tui.JobsKeys,
 		},
+
+		ErrorToast: toast.New(toast.Model{
+			Progress: progress.New(
+				progress.WithDefaultGradient(),
+				progress.WithFillCharacters('-', ' '),
+				progress.WithoutPercentage(),
+			),
+			Interval: 10,
+			// Type:     toast.Info,
+			// Show:     true,
+			// Message:  "Info msg",
+		}),
 	}
 	return newM
 }

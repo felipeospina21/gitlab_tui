@@ -2,13 +2,14 @@ package tui
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"gitlab_tui/config"
-	"gitlab_tui/internal/logger"
 	"gitlab_tui/internal/style"
 	"gitlab_tui/tui/components"
 	"gitlab_tui/tui/components/table"
-	"log"
+	"gitlab_tui/tui/components/toast"
+	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -29,6 +30,7 @@ type Model struct {
 	Window        tea.WindowSizeMsg
 	Help          components.Help
 	Keys          GlobalKeyMap
+	ErrorToast    toast.Model
 }
 
 const (
@@ -41,9 +43,33 @@ const (
 	TabsView
 )
 
-const useHighPerformanceRenderer = false
+type SuccessMsg struct {
+	MRFetch        string
+	CommentsFetch  string
+	PipelinesFetch string
+	JobsFetch      string
+	Merge          string
+}
 
-func (m Model) Init() tea.Cmd { return nil }
+var SuccessMessage = SuccessMsg{
+	MRFetch:        "success_mr_fetch",
+	CommentsFetch:  "success_comments_fetch",
+	PipelinesFetch: "success_pipelines_fetch",
+	JobsFetch:      "success_jobs_fetch",
+	Merge:          "success_merge",
+}
+
+const (
+	useHighPerformanceRenderer = false
+	toastInterval              = 10
+)
+
+type tickMsg time.Time
+
+func (m Model) Init() tea.Cmd {
+	return m.ErrorToast.Init()
+	// return nil
+}
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
@@ -52,7 +78,37 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
+		// Global commands
+		switch {
+		case key.Matches(msg, GlobalKeys.Quit):
+			cmds = append(cmds, tea.Quit)
+
+		case key.Matches(msg, GlobalKeys.ReloadConfig):
+			config.Load(&config.Config)
+
+		case key.Matches(msg, GlobalKeys.ThrowError):
+			cmds = append(cmds, func() tea.Msg {
+				return errors.New("mocked error")
+			})
+		}
+
+		// Views commands
 		switch m.CurrView {
+		case ProjectsView:
+			switch {
+			case key.Matches(msg, ProjectsKeys.ViewMRs):
+				c := m.viewMergeReqs(m.Window)
+				cmds = append(cmds, c)
+			}
+			m.Projects.List, cmd = m.Projects.List.Update(msg)
+
+		case MdView:
+			switch {
+			case key.Matches(msg, MdKeys.NavigateBack):
+				m.CurrView = m.PrevView
+			}
+			m.Md.Viewport, cmd = m.Md.Viewport.Update(msg)
+
 		case MrTableView:
 			switch {
 			case key.Matches(msg, m.MergeRequests.ListKeys.Help):
@@ -133,38 +189,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			}
 			m.MergeRequests.PipelineJobs, cmd = m.MergeRequests.PipelineJobs.Update(msg)
-		}
 
-		// Global commands
-		switch {
-		case key.Matches(msg, GlobalKeys.Quit):
-			cmds = append(cmds, tea.Quit)
-
-		case key.Matches(msg, GlobalKeys.ReloadConfig):
-			config.Load(&config.Config)
-
-		}
-
-		switch m.CurrView {
-		case ProjectsView:
-			switch msg.String() {
-			case "enter":
-				c := m.viewMergeReqs(m.Window)
-				cmds = append(cmds, c)
-			}
-			m.Projects.List, cmd = m.Projects.List.Update(msg)
-
-		case MdView:
-			switch msg.String() {
-			case "backspace":
-				m.CurrView = m.PrevView
-			}
-
-			m.Md.Viewport, cmd = m.Md.Viewport.Update(msg)
 		}
 
 	case tea.WindowSizeMsg:
 		m.Window = msg
+		m.ErrorToast.Progress.Width = msg.Width - 4
+		m.ErrorToast.Width = msg.Width - 4
 
 		cmd = m.setViewportViewSize(msg)
 		if cmd != nil {
@@ -195,40 +226,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case string:
 		switch msg {
-		case "success_mergeReqs":
+		case SuccessMessage.MRFetch:
 			m.CurrView = MrTableView
-			m.MergeRequests.Error = nil
 
-		case "success_comments":
+		case SuccessMessage.CommentsFetch:
 			m.CurrView = MrCommentsView
 			m.setSelectedMr()
 
-		case "success_pipelines":
+		case SuccessMessage.PipelinesFetch:
 			m.CurrView = MrPipelinesView
 			m.setSelectedMr()
 
-		case "success_jobs":
+		case SuccessMessage.JobsFetch:
 			m.CurrView = JobsView
 			// m.MergeRequests.PipelineJobs.SelectedRow()[table.PipelineJobsCols.Name.Idx]
 			// m.setSelectedMr()
 
-		case "merge_unauthorized":
-		case "merge_branch_cant_be_merged":
-		case "merge_method_not_allowed":
-		case "merge_error_in_sha":
-			m.setResponseContent("Error: " + msg)
-			m.CurrView = MdView
+		case SuccessMessage.Merge:
+			// TODO: change message for api response
+			m.displayToast("Successfully Merged", toast.Success)
 
 		}
 
 	case error:
-		logger.Debug("error-msg", func() {
-			log.Println(msg)
-		})
+		cmds = append(cmds, m.ErrorToast.Init())
+		m.displayToast(msg.Error(), toast.Error)
 
-		// TODO: Remove error banner after time/action
-
-		m.MergeRequests.Error = msg
 		lh, lv := style.ListItemStyle.GetFrameSize()
 		nh, nv := style.ErrorNotification(m.Window.Height, m.Window.Width).GetFrameSize()
 
@@ -238,12 +261,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Projects.List.SetSize(m.Window.Width-h, m.Window.Height-v)
 
 	}
-	cmds = append(cmds, cmd)
-	return m, tea.Batch(cmds...)
-}
 
-type ResponseError struct {
-	Message string `json:"message"`
+	toastModel, c := m.ErrorToast.Update(msg)
+	m.ErrorToast = toastModel.(toast.Model)
+
+	cmds = append(cmds, cmd, c)
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
@@ -251,14 +274,11 @@ func (m Model) View() string {
 	case ProjectsView:
 		projects := style.ListItemStyle.Render(m.Projects.List.View())
 
-		if m.MergeRequests.Error != nil {
-			return m.getErrorMessage(projects)
+		if m.ErrorToast.Show {
+			toast := m.ErrorToast.View()
+			return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Left), toast, projects)
 		}
 		return projects
-		// projects := style.ListItemStyle.Render(m.Projects.List.View())
-		// help := style.HelpStyle.Render(m.Help.Model.View(GlobalKeys))
-		//
-		// return lipgloss.JoinVertical(0, projects, help)
 
 	case MdView:
 		return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[table.MergeReqsCols.Title.Idx]), m.Md.Viewport.View(), m.footerView())
@@ -294,8 +314,9 @@ func (m Model) renderTableView(view string, title string, footer string) string 
 		style.HelpStyle.Render(footer),
 	)
 
-	if m.MergeRequests.Error != nil {
-		return m.getErrorMessage(table)
+	if m.ErrorToast.Show {
+		toast := m.ErrorToast.View()
+		return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Left), toast, table)
 	}
 
 	return table
@@ -325,11 +346,23 @@ func (m *Model) setSelectedMr() {
 	m.MergeRequests.SelectedMr = m.getSelectedRow(table.MergeReqsCols.Title.Idx, MrTableView)
 }
 
-func (m Model) getErrorMessage(view string) string {
+func (m *Model) displayToast(msg string, t toast.ToastType) {
+	m.ErrorToast.Show = true
+	m.ErrorToast.Message = getErrorMessage(msg)
+	m.ErrorToast.Type = t
+}
+
+// TODO: Move these to its own module?
+type ResponseError struct {
+	Message string `json:"message"`
+}
+
+func getErrorMessage(msg string) string {
 	var e ResponseError
-	json.Unmarshal([]byte(m.MergeRequests.Error.Error()), &e)
 
-	errorMsg := style.ErrorNotification(m.Window.Height, m.Window.Width).Render(e.Message)
-
-	return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Left), errorMsg, view)
+	err := json.Unmarshal([]byte(msg), &e)
+	if err != nil {
+		return msg
+	}
+	return e.Message
 }

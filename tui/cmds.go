@@ -44,7 +44,7 @@ func (m *Model) viewComments() tea.Cmd {
 			return err
 		}
 
-		return "success_comments"
+		return SuccessMessage.CommentsFetch
 	}
 	m.MergeRequests.Comments = m.SetMergeRequestsCommentsModel(r)
 	return c
@@ -56,36 +56,20 @@ func (m *Model) viewPipelines() tea.Cmd {
 		if err != nil {
 			return err
 		}
-		return "success_pipelines"
+		return SuccessMessage.PipelinesFetch
 	}
 	m.MergeRequests.Pipeline = m.SetMergeRequestPipelinesModel(r)
 	return c
 }
 
 func (m *Model) mergeMR() tea.Cmd {
-	statusCode, err := server.MergeMR(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
+	_, err := server.MergeMR(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
 	c := func() tea.Msg {
 		if err != nil {
-			logger.Error(err)
 			return err
 		}
 
-		switch statusCode {
-		case 401:
-			return "merge_unauthorized"
-
-		case 405:
-			return "merge_method_not_allowed"
-
-		case 409:
-			return "merge_error_in_sha"
-
-		case 422:
-			return "merge_branch_cant_be_merged"
-
-		}
-
-		return "success_merge"
+		return SuccessMessage.Merge
 	}
 	return c
 }
@@ -127,7 +111,7 @@ func (m *Model) viewPipelineJobs() tea.Cmd {
 		if err != nil {
 			return err
 		}
-		return "success_jobs"
+		return SuccessMessage.JobsFetch
 	}
 	m.MergeRequests.PipelineJobs = m.SetPipelineJobsModel(r)
 	return c
@@ -146,7 +130,7 @@ func (m *Model) viewMergeReqs(window tea.WindowSizeMsg) tea.Cmd {
 				return err
 			}
 
-			return "success_mergeReqs"
+			return SuccessMessage.MRFetch
 		}
 		m.MergeRequests.List = table.InitModel(table.InitModelParams{
 			Rows:      r,

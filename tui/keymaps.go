@@ -2,13 +2,13 @@ package tui
 
 import (
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
 )
 
 type GlobalKeyMap struct {
 	Help         key.Binding
 	Quit         key.Binding
 	ReloadConfig key.Binding
+	ThrowError   key.Binding
 }
 
 func (k GlobalKeyMap) ShortHelp() []key.Binding {
@@ -34,6 +34,12 @@ var GlobalKeys = GlobalKeyMap{
 	ReloadConfig: key.NewBinding(
 		key.WithKeys("C"),
 		key.WithHelp("C", "reload config"),
+	),
+
+	// TODO: make this available only when program is run whith certain cmd
+	ThrowError: key.NewBinding(
+		key.WithKeys("E"),
+		key.WithHelp("E", "throw error"),
 	),
 }
 
@@ -204,25 +210,56 @@ var JobsKeys = JobsKeyMap{
 }
 
 type ProjectsKeyMap struct {
+	ViewMRs      key.Binding
 	ReloadConfig key.Binding
-	list.KeyMap
+	GlobalKeyMap
+	// list.KeyMap
 }
 
 func (k ProjectsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.ShowFullHelp, k.Quit, k.Filter, k.ReloadConfig}
+	return []key.Binding{k.ReloadConfig, k.ViewMRs}
 }
 
 func (k ProjectsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.ReloadConfig}, // first column
-		{k.ShowFullHelp, k.Quit, k.Filter, k.ReloadConfig}, // second column
+		{k.ReloadConfig, k.ViewMRs}, // first column
+		// {k.ShowFullHelp, k.Quit, k.Filter, k.ReloadConfig}, // second column
 	}
 }
 
 var ProjectsKeys = ProjectsKeyMap{
+	ViewMRs: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "view merge requests"),
+	),
 	ReloadConfig: key.NewBinding(
 		key.WithKeys("C"),
 		key.WithHelp("C", "reload config"),
 	),
-	KeyMap: list.DefaultKeyMap(),
+	GlobalKeyMap: GlobalKeys,
+	// KeyMap: list.DefaultKeyMap(),
+}
+
+type MdKeyMap struct {
+	NavigateBack key.Binding
+	GlobalKeyMap
+}
+
+func (k MdKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.ReloadConfig, k.NavigateBack}
+}
+
+func (k MdKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.NavigateBack}, // first column
+		// {k.ShowFullHelp, k.Quit, k.Filter, k.ReloadConfig}, // second column
+	}
+}
+
+var MdKeys = MdKeyMap{
+	NavigateBack: key.NewBinding(
+		key.WithKeys("backspace"),
+		key.WithHelp("backspace", "navigate back"),
+	),
+	GlobalKeyMap: GlobalKeys,
 }
