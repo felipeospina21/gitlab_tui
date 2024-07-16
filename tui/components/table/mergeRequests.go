@@ -18,10 +18,10 @@ type mergeReqsTable struct {
 
 var MergeReqsCols = mergeReqsTable{
 	CreatedAd:   TableCol{Idx: 0, Name: icon.Clock},
-	Title:       TableCol{Idx: 1, Name: "Title"},
-	Author:      TableCol{Idx: 2, Name: "Author"},
-	MergeStatus: TableCol{Idx: 3, Name: "Merge Status"},
-	Draft:       TableCol{Idx: 4, Name: "Draft"},
+	Draft:       TableCol{Idx: 1, Name: ""},
+	Title:       TableCol{Idx: 2, Name: "Title"},
+	Author:      TableCol{Idx: 3, Name: "Author"},
+	MergeStatus: TableCol{Idx: 4, Name: "Merge Status"},
 	Confilcts:   TableCol{Idx: 5, Name: "Conflicts"},
 	URL:         TableCol{Idx: 6, Name: "Url"},
 	Desc:        TableCol{Idx: 7, Name: "Description"},
@@ -35,7 +35,7 @@ var MergeReqsIconCols = []int{
 }
 
 func GetMergeReqsColums(width int) []Column {
-	id := int(float32(width) * 0.06)
+	id := int(float32(width) * 0.04)
 	title := int(float32(width) * 0.5)
 	author := int(float32(width) * 0.2)
 	status := int(float32(width) * 0.1)
@@ -44,10 +44,10 @@ func GetMergeReqsColums(width int) []Column {
 
 	columns := []Column{
 		{Title: MergeReqsCols.CreatedAd.Name, Width: id},
+		{Title: MergeReqsCols.Draft.Name, Width: i},
 		{Title: MergeReqsCols.Title.Name, Width: title},
 		{Title: MergeReqsCols.Author.Name, Width: author},
 		{Title: MergeReqsCols.MergeStatus.Name, Width: status},
-		{Title: MergeReqsCols.Draft.Name, Width: i},
 		{Title: MergeReqsCols.Confilcts.Name, Width: i},
 		{Title: MergeReqsCols.URL.Name, Width: url},
 		{Title: MergeReqsCols.Desc.Name, Width: 0},

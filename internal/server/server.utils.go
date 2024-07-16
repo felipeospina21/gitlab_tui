@@ -38,12 +38,10 @@ func fetchData(url string, config fetchConfig) ([]byte, int, error) {
 	return responseData, res.StatusCode, err
 }
 
-func renderIcon(b bool) string {
-	// i := icon.Dash
-	i := icon.Empty
+func renderIcon(b bool, i string) string {
 	if b {
-		i = icon.Check
+		return i
 	}
 
-	return i
+	return icon.Empty
 }

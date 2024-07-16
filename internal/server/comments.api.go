@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab_tui/config"
+	"gitlab_tui/internal/icon"
 	"gitlab_tui/tui/components/table"
 	"strconv"
 	"strings"
@@ -46,7 +47,7 @@ func GetMergeRequestComments(projectID string, mrID string) ([]table.Row, error)
 				createdAt,
 				item.Type,
 				item.Author.Name,
-				renderIcon(item.Resolved),
+				renderIcon(item.Resolved, icon.Check),
 				item.Body,
 				strconv.Itoa(item.ID),
 			}

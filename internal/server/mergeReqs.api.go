@@ -47,11 +47,11 @@ func GetMergeRequests(projectID string) ([]table.Row, error) {
 
 		n := table.Row{
 			createdAt,
+			renderIcon(item.IsDraft, icon.Edit),
 			item.Title,
 			item.Author.Name,
 			checkMRStatus(item.DetailedMergeStatus),
-			renderIcon(item.IsDraft),
-			renderIcon(item.HasConflicts),
+			renderIcon(item.HasConflicts, icon.Cross),
 			item.URL,
 			item.Desc,
 			strconv.Itoa(item.ID),
