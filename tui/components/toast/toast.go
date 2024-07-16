@@ -11,7 +11,7 @@ import (
 
 const (
 	padding  = 0
-	maxWidth = 80
+	maxWidth = 800
 	fps      = 60
 )
 
@@ -67,6 +67,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tickMsg:
 		if m.Show {
 			m.percent += 0.01
+
 			if m.percent > 1.0 {
 				m.percent = 0
 				m.Message = ""
@@ -85,7 +86,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	pad := strings.Repeat(" ", padding)
-	bar := pad + m.Progress.ViewAs(m.percent) + "\n\n"
+	bar := pad + m.Progress.ViewAs(m.percent)
 
 	var toast string
 	switch m.Type {
@@ -106,20 +107,7 @@ func (m Model) View() string {
 }
 
 func (m Model) tickCmd() tea.Cmd {
-	return m.Tick(time.Millisecond*m.Interval*10, func(t time.Time) tea.Msg {
+	return tea.Tick(time.Millisecond*m.Interval*10, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
-}
-
-func (m *Model) Tick(d time.Duration, fn func(time.Time) tea.Msg) tea.Cmd {
-	t := time.NewTimer(d)
-	m.Timer = t
-	return func() tea.Msg {
-		ts := <-t.C
-		t.Stop()
-		for len(t.C) > 0 {
-			<-t.C
-		}
-		return fn(ts)
-	}
 }

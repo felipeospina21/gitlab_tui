@@ -88,7 +88,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, GlobalKeys.ThrowError):
 			cmds = append(cmds, func() tea.Msg {
-				return errors.New("mocked error")
+				return errors.New("mocked")
 			})
 		}
 
@@ -276,7 +276,7 @@ func (m Model) View() string {
 
 		if m.Toast.Show {
 			toast := m.Toast.View()
-			return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Left), toast, projects)
+			return lipgloss.JoinVertical(lipgloss.Left, toast, projects)
 		}
 		return projects
 
@@ -316,7 +316,7 @@ func (m Model) renderTableView(view string, title string, footer string) string 
 
 	if m.Toast.Show {
 		toast := m.Toast.View()
-		return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Left), toast, table)
+		return lipgloss.JoinVertical(lipgloss.Left, toast, table)
 	}
 
 	return table
