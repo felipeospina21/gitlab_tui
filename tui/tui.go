@@ -30,7 +30,7 @@ type Model struct {
 	Window        tea.WindowSizeMsg
 	Help          components.Help
 	Keys          GlobalKeyMap
-	ErrorToast    toast.Model
+	Toast         toast.Model
 }
 
 const (
@@ -67,7 +67,7 @@ const (
 type tickMsg time.Time
 
 func (m Model) Init() tea.Cmd {
-	return m.ErrorToast.Init()
+	return m.Toast.Init()
 	// return nil
 }
 
@@ -194,8 +194,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		m.Window = msg
-		m.ErrorToast.Progress.Width = msg.Width - 4
-		m.ErrorToast.Width = msg.Width - 4
+		m.Toast.Progress.Width = msg.Width - 4
+		m.Toast.Width = msg.Width - 4
 
 		cmd = m.setViewportViewSize(msg)
 		if cmd != nil {
@@ -249,11 +249,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case error:
-		cmds = append(cmds, m.ErrorToast.Init())
+		cmds = append(cmds, m.Toast.Init())
 		m.displayToast(msg.Error(), toast.Error)
 
 		lh, lv := style.ListItemStyle.GetFrameSize()
-		nh, nv := style.ErrorNotification(m.Window.Height, m.Window.Width).GetFrameSize()
+		nh, nv := toast.ErrorStyle(m.Window.Height, m.Window.Width).GetFrameSize()
 
 		h := (lh + nh) * 2
 		v := (lv + nv) * 2
@@ -262,8 +262,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	}
 
-	toastModel, c := m.ErrorToast.Update(msg)
-	m.ErrorToast = toastModel.(toast.Model)
+	toastModel, c := m.Toast.Update(msg)
+	m.Toast = toastModel.(toast.Model)
 
 	cmds = append(cmds, cmd, c)
 	return m, tea.Batch(cmds...)
@@ -274,8 +274,8 @@ func (m Model) View() string {
 	case ProjectsView:
 		projects := style.ListItemStyle.Render(m.Projects.List.View())
 
-		if m.ErrorToast.Show {
-			toast := m.ErrorToast.View()
+		if m.Toast.Show {
+			toast := m.Toast.View()
 			return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Left), toast, projects)
 		}
 		return projects
@@ -314,8 +314,8 @@ func (m Model) renderTableView(view string, title string, footer string) string 
 		style.HelpStyle.Render(footer),
 	)
 
-	if m.ErrorToast.Show {
-		toast := m.ErrorToast.View()
+	if m.Toast.Show {
+		toast := m.Toast.View()
 		return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Left), toast, table)
 	}
 
@@ -347,9 +347,9 @@ func (m *Model) setSelectedMr() {
 }
 
 func (m *Model) displayToast(msg string, t toast.ToastType) {
-	m.ErrorToast.Show = true
-	m.ErrorToast.Message = getErrorMessage(msg)
-	m.ErrorToast.Type = t
+	m.Toast.Show = true
+	m.Toast.Message = getErrorMessage(msg)
+	m.Toast.Type = t
 }
 
 // TODO: Move these to its own module?

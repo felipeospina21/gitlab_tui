@@ -42,7 +42,7 @@ func InitModel() tui.Model {
 			JobsKeys:     tui.JobsKeys,
 		},
 
-		ErrorToast: toast.New(toast.Model{
+		Toast: toast.New(toast.Model{
 			Progress: progress.New(
 				progress.WithDefaultGradient(),
 				progress.WithFillCharacters('-', ' '),

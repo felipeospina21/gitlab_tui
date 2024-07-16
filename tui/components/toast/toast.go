@@ -90,16 +90,16 @@ func (m Model) View() string {
 	var toast string
 	switch m.Type {
 	case Success:
-		toast = successStyle(m.Height, m.Width).Render(m.Message)
+		toast = SuccessStyle(m.Height, m.Width).Render(m.Message)
 
 	case Error:
-		toast = errorStyle(m.Height, m.Width).Render(m.Message)
+		toast = ErrorStyle(m.Height, m.Width).Render(m.Message)
 
 	case Warning:
-		toast = warningStyle(m.Height, m.Width).Render(m.Message)
+		toast = WarningStyle(m.Height, m.Width).Render(m.Message)
 
 	case Info:
-		toast = infoStyle(m.Height, m.Width).Render(m.Message)
+		toast = InfoStyle(m.Height, m.Width).Render(m.Message)
 	}
 
 	return lipgloss.JoinVertical(0, toast, bar)
