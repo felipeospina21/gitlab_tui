@@ -2,21 +2,24 @@ package config
 
 import (
 	"fmt"
+	"gitlab_tui/internal/logger"
+	"log"
 
 	"github.com/spf13/viper"
 )
 
 type config struct {
-	BaseURL    string `mapstructure:"base_url"`
-	APIToken   string `mapstructure:"token"`
-	APIVersion string `mapstructure:"api_version"`
+	BaseURL    string                   `mapstructure:"base_url"`
+	APIToken   string                   `mapstructure:"token"`
+	APIVersion string                   `mapstructure:"api_version"`
+	Projects   []map[string]interface{} `mapstructure:"projects"`
 }
 
 var Config config
 
 func Load(configObj *config) {
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
+	viper.SetConfigName("glabt")
+	viper.SetConfigType("toml")
 
 	viper.AddConfigPath("$HOME/.config/glabt/")
 	viper.AddConfigPath("$HOME")
@@ -31,4 +34,14 @@ func Load(configObj *config) {
 	if err != nil {
 		panic(fmt.Errorf("fatal error unmarshal: %w", err))
 	}
+
+	// Env vars
+	e := viper.BindEnv("glabt_token")
+	if e != nil {
+		logger.Debug("e", func() {
+			log.Print(e)
+		})
+	}
+	token := viper.Get("glabt_token")
+	Config.APIToken = token.(string)
 }

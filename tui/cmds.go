@@ -120,10 +120,10 @@ func (m *Model) viewPipelineJobs() tea.Cmd {
 // Projects List
 func (m *Model) viewMergeReqs(window tea.WindowSizeMsg) tea.Cmd {
 	s := m.Projects.List.SelectedItem()
-	i, ok := s.(item)
+	i, ok := s.(Item)
 	var c tea.Cmd
 	if ok {
-		m.Projects.ProjectID = i.id
+		m.Projects.ProjectID = i.ID
 		r, err := server.GetMergeRequests(m.Projects.ProjectID)
 		c = func() tea.Msg {
 			if err != nil {

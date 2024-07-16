@@ -2,6 +2,8 @@ package tui
 
 import (
 	"fmt"
+	"gitlab_tui/config"
+	"gitlab_tui/internal/logger"
 	"gitlab_tui/internal/style"
 	"io"
 	"strings"
@@ -10,17 +12,18 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/mitchellh/mapstructure"
 )
 
 const ellipsis = "…"
 
-type item struct {
-	title, id string
+type Item struct {
+	Name, ID string
 }
 
-func (i item) Title() string       { return i.title }
-func (i item) Description() string { return i.id }
-func (i item) FilterValue() string { return i.title }
+func (i Item) Title() string       { return i.Name }
+func (i Item) Description() string { return i.ID }
+func (i Item) FilterValue() string { return i.Name }
 
 type itemDelegate struct {
 	ShowDescription bool
@@ -38,7 +41,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		s            = &d.Styles
 	)
 
-	if i, ok := listItem.(item); ok {
+	if i, ok := listItem.(Item); ok {
 		title = i.Title()
 		desc = i.Description()
 	} else {
@@ -112,13 +115,21 @@ type ProjectsModel struct {
 }
 
 func InitProjectsList() list.Model {
-	items := []list.Item{
-		item{title: "Spellbook", id: "17050"},
-		item{title: "Radar", id: "98211"},
-		item{title: "Planning-Tool", id: "58799"},
+	projects := config.Config.Projects
+
+	var li []list.Item
+	var i Item
+
+	for _, val := range projects {
+		e := mapstructure.Decode(val, &i)
+		if e != nil {
+			logger.Error(e)
+		}
+		li = append(li, i)
+
 	}
 
-	l := list.New(items, itemDelegate{ShowDescription: true, Styles: style.NewDefaultItemStyles()}, 0, 0)
+	l := list.New(li, itemDelegate{ShowDescription: true, Styles: style.NewDefaultItemStyles()}, 0, len(li))
 	// l.SetShowHelp(false)
 	l.Title = "Disney Projects"
 	l.Styles.Title = style.ListItemStyle
