@@ -7,16 +7,12 @@ import (
 	"gitlab_tui/internal/server"
 	"gitlab_tui/internal/style"
 	"gitlab_tui/tui/components/table"
-	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m *Model) openInBrowser(tableColIdx table.TableColIndex, view views) {
 	selectedURL := m.getSelectedRow(tableColIdx, view)
-	logger.Debug("url", func() {
-		log.Print(selectedURL, tableColIdx, view)
-	})
 	exec.Openbrowser(selectedURL)
 }
 

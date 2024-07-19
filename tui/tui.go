@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gitlab_tui/config"
 	"gitlab_tui/internal/style"
 	"gitlab_tui/tui/components"
 	"gitlab_tui/tui/components/table"
@@ -49,6 +48,7 @@ type SuccessMsg struct {
 	PipelinesFetch string
 	JobsFetch      string
 	Merge          string
+	ReloadEnv      string
 }
 
 var SuccessMessage = SuccessMsg{
@@ -57,6 +57,7 @@ var SuccessMessage = SuccessMsg{
 	PipelinesFetch: "success_pipelines_fetch",
 	JobsFetch:      "success_jobs_fetch",
 	Merge:          "success_merge",
+	ReloadEnv:      "success_env_reload",
 }
 
 const (
@@ -82,9 +83,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, GlobalKeys.Quit):
 			cmds = append(cmds, tea.Quit)
-
-		case key.Matches(msg, GlobalKeys.ReloadConfig):
-			config.Load(&config.Config)
 
 		case key.Matches(msg, GlobalKeys.ThrowError):
 			cmds = append(cmds, func() tea.Msg {
@@ -244,13 +242,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case SuccessMessage.Merge:
 			// TODO: change message for api response
-			m.displayToast("Successfully Merged", toast.Success)
+			cmd = m.displayToast("Successfully Merged", toast.Success)
+			cmds = append(cmds, cmd)
 
 		}
 
 	case error:
-		cmds = append(cmds, m.Toast.Init())
-		m.displayToast(msg.Error(), toast.Error)
+		cmd = m.displayToast(msg.Error(), toast.Error)
+		cmds = append(cmds, cmd)
 
 		lh, lv := style.ListItemStyle.GetFrameSize()
 		nh, nv := toast.ErrorStyle(m.Window.Height, m.Window.Width).GetFrameSize()
@@ -346,10 +345,11 @@ func (m *Model) setSelectedMr() {
 	m.MergeRequests.SelectedMr = m.getSelectedRow(table.MergeReqsCols.Title.Idx, MrTableView)
 }
 
-func (m *Model) displayToast(msg string, t toast.ToastType) {
+func (m *Model) displayToast(msg string, t toast.ToastType) tea.Cmd {
 	m.Toast.Show = true
 	m.Toast.Message = getErrorMessage(msg)
 	m.Toast.Type = t
+	return m.Toast.Init()
 }
 
 // TODO: Move these to its own module?

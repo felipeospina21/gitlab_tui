@@ -5,19 +5,18 @@ import (
 )
 
 type GlobalKeyMap struct {
-	Help         key.Binding
-	Quit         key.Binding
-	ReloadConfig key.Binding
-	ThrowError   key.Binding
+	Help       key.Binding
+	Quit       key.Binding
+	ThrowError key.Binding
 }
 
 func (k GlobalKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.ReloadConfig}
+	return []key.Binding{k.Help, k.Quit}
 }
 
 func (k GlobalKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.ReloadConfig}, // first column
+		{},               // first column
 		{k.Help, k.Quit}, // second column
 	}
 }
@@ -30,10 +29,6 @@ var GlobalKeys = GlobalKeyMap{
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
 		key.WithHelp("q", "quit"),
-	),
-	ReloadConfig: key.NewBinding(
-		key.WithKeys("C"),
-		key.WithHelp("C", "reload config"),
 	),
 
 	// TODO: make this available only when program is run whith certain cmd
@@ -55,13 +50,13 @@ type MergeReqsKeyMap struct {
 }
 
 func (k MergeReqsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.Comments, k.Pipelines, k.Description, k.Refetch, k.OpenInBrowser, k.NavigateBack, k.ReloadConfig, k.Merge}
+	return []key.Binding{k.Help, k.Quit, k.Comments, k.Pipelines, k.Description, k.Refetch, k.OpenInBrowser, k.NavigateBack, k.Merge}
 }
 
 func (k MergeReqsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Comments, k.Pipelines, k.Description, k.Refetch, k.OpenInBrowser, k.NavigateBack}, // first column
-		{k.Merge, k.ReloadConfig, k.Help, k.Quit},                                            // second column
+		{k.Merge, k.Help, k.Quit}, // second column
 	}
 }
 
@@ -106,13 +101,13 @@ type CommentsKeyMap struct {
 }
 
 func (k CommentsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.Description, k.NavigateBack, k.OpenInBrowser, k.Refetch, k.ReloadConfig}
+	return []key.Binding{k.Help, k.Quit, k.Description, k.NavigateBack, k.OpenInBrowser, k.Refetch}
 }
 
 func (k CommentsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Description, k.NavigateBack, k.OpenInBrowser, k.Refetch}, // first column
-		{k.ReloadConfig, k.Help, k.Quit},                            // second column
+		{k.Help, k.Quit}, // second column
 	}
 }
 
@@ -145,13 +140,13 @@ type PipelineKeyMap struct {
 }
 
 func (k PipelineKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.Jobs, k.NavigateBack, k.OpenInBrowser, k.Refetch, k.ReloadConfig}
+	return []key.Binding{k.Help, k.Quit, k.Jobs, k.NavigateBack, k.OpenInBrowser, k.Refetch}
 }
 
 func (k PipelineKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Jobs, k.NavigateBack, k.OpenInBrowser, k.Refetch}, // first column
-		{k.ReloadConfig, k.Help, k.Quit},                     // second column
+		{k.Help, k.Quit}, // second column
 	}
 }
 
@@ -183,13 +178,13 @@ type JobsKeyMap struct {
 }
 
 func (k JobsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.NavigateBack, k.OpenInBrowser, k.Refetch, k.ReloadConfig}
+	return []key.Binding{k.Help, k.Quit, k.NavigateBack, k.OpenInBrowser, k.Refetch}
 }
 
 func (k JobsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.NavigateBack, k.OpenInBrowser, k.Refetch}, // first column
-		{k.ReloadConfig, k.Help, k.Quit},             // second column
+		{k.Help, k.Quit}, // second column
 	}
 }
 
@@ -210,19 +205,18 @@ var JobsKeys = JobsKeyMap{
 }
 
 type ProjectsKeyMap struct {
-	ViewMRs      key.Binding
-	ReloadConfig key.Binding
+	ViewMRs key.Binding
 	GlobalKeyMap
 	// list.KeyMap
 }
 
 func (k ProjectsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.ReloadConfig, k.ViewMRs}
+	return []key.Binding{k.ViewMRs}
 }
 
 func (k ProjectsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.ReloadConfig, k.ViewMRs}, // first column
+		{k.ViewMRs}, // first column
 		// {k.ShowFullHelp, k.Quit, k.Filter, k.ReloadConfig}, // second column
 	}
 }
@@ -231,10 +225,6 @@ var ProjectsKeys = ProjectsKeyMap{
 	ViewMRs: key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "view merge requests"),
-	),
-	ReloadConfig: key.NewBinding(
-		key.WithKeys("C"),
-		key.WithHelp("C", "reload config"),
 	),
 	GlobalKeyMap: GlobalKeys,
 	// KeyMap: list.DefaultKeyMap(),
@@ -246,7 +236,7 @@ type MdKeyMap struct {
 }
 
 func (k MdKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.ReloadConfig, k.NavigateBack}
+	return []key.Binding{k.NavigateBack}
 }
 
 func (k MdKeyMap) FullHelp() [][]key.Binding {
