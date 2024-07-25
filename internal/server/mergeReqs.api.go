@@ -68,12 +68,12 @@ func MergeMR(projectID string, mergeReqIDD string) (int, error) {
 	mrURLParams := []string{"should_remove_source_branch=true", "squash=true"}
 	params := "?" + strings.Join(mrURLParams, "&")
 
-	_, statusCode, err := fetchData(url, fetchConfig{method: "PUT", params: params, token: token})
+	_, res, err := fetchData(url, fetchConfig{method: "PUT", params: params, token: token})
 	if err != nil {
-		return statusCode, err
+		return res.StatusCode, err
 	}
 
-	return statusCode, nil
+	return res.StatusCode, nil
 }
 
 // approvals_syncing: The merge request’s approvals are syncing.

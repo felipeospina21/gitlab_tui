@@ -145,3 +145,39 @@ func (m *Model) refetchJobs() {
 	}
 	m.MergeRequests.PipelineJobs.SetRows(r)
 }
+
+// Issues List Table
+func (m *Model) viewIssues() tea.Cmd {
+	r, pages, err := server.GetIssues(m.Projects.ProjectID, "")
+
+	c := func() tea.Msg {
+		if err != nil {
+			return err
+		}
+
+		return SuccessMessage.IssuesList
+	}
+	m.Issues.List = m.SetIssuesListModel(r)
+	m.Issues.PrevPage = pages.Prev
+	m.Issues.NexPage = pages.Next
+	m.Paginator.TotalPages = pages.Total
+
+	return c
+}
+
+func (m *Model) getIssuesNextPage() tea.Cmd {
+	r, pages, err := server.GetIssues(m.Projects.ProjectID, m.Issues.NexPage)
+
+	c := func() tea.Msg {
+		if err != nil {
+			return err
+		}
+
+		return ""
+	}
+	m.Issues.List.SetRows(r)
+	m.Issues.PrevPage = pages.Prev
+	m.Issues.NexPage = pages.Next
+
+	return c
+}

@@ -5,6 +5,7 @@ import (
 	"gitlab_tui/internal/icon"
 	"io"
 	"net/http"
+	"strings"
 )
 
 type fetchConfig struct {
@@ -13,17 +14,17 @@ type fetchConfig struct {
 	token  string
 }
 
-func fetchData(url string, config fetchConfig) ([]byte, int, error) {
+func fetchData(url string, config fetchConfig) ([]byte, *http.Response, error) {
 	req, err := http.NewRequest(config.method, url+config.params, nil)
 	if err != nil {
-		return []byte{}, 0, err
+		return []byte{}, nil, err
 	}
 
 	req.Header.Add("PRIVATE-TOKEN", config.token)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return []byte{}, 0, err
+		return []byte{}, res, err
 	}
 
 	defer res.Body.Close()
@@ -35,7 +36,7 @@ func fetchData(url string, config fetchConfig) ([]byte, int, error) {
 		responseData = nil
 	}
 
-	return responseData, res.StatusCode, err
+	return responseData, res, err
 }
 
 func renderIcon(b bool, i string) string {
@@ -44,4 +45,24 @@ func renderIcon(b bool, i string) string {
 	}
 
 	return icon.Empty
+}
+
+func getPagesLinks(links []string) (string, string) {
+	// First page, only has Next page link
+	if len(links) == 3 {
+		return "", parseLink(links[0])
+	}
+
+	return parseLink(links[0]), parseLink(links[1])
+}
+
+func parseLink(l string) string {
+	b, _, ok := strings.Cut(l, ";")
+	if ok {
+		trimed := strings.TrimSpace(b)
+		parsed := strings.TrimSuffix(strings.TrimPrefix(trimed, "<"), ">")
+		return parsed
+	}
+
+	return l
 }
