@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"gitlab_tui/internal/style"
 	"gitlab_tui/tui/components/table"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -16,7 +15,7 @@ func (m *Model) resizeMrTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 	t := table.InitModel(table.InitModelParams{
 		Rows:      m.MergeRequests.List.Rows(),
 		Colums:    table.GetMergeReqsColums(msg.Width - 10),
-		StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.MergeReqsIconCols),
+		StyleFunc: table.StyleIconsColumns(table.Styles(table.DefaultStyle()), table.MergeReqsIconCols),
 	})
 
 	newM := m.UpdateModel(
@@ -38,7 +37,7 @@ func (m *Model) resizeMrCommentsTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 	t := table.InitModel(table.InitModelParams{
 		Rows:      m.MergeRequests.Comments.Rows(),
 		Colums:    table.GetCommentsColums(msg.Width - 10),
-		StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.CommentsIconCols),
+		StyleFunc: table.StyleIconsColumns(table.Styles(table.DefaultStyle()), table.CommentsIconCols),
 	})
 
 	newM := m.UpdateModel(
@@ -60,7 +59,7 @@ func (m *Model) resizeMrPipelinesTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 	t := table.InitModel(table.InitModelParams{
 		Rows:      m.MergeRequests.Pipeline.Rows(),
 		Colums:    table.GetPipelinesColums(msg.Width - 10),
-		StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.PipelinesIconCols),
+		StyleFunc: table.StyleIconsColumns(table.Styles(table.DefaultStyle()), table.PipelinesIconCols),
 	})
 
 	newM := m.UpdateModel(

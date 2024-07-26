@@ -3,7 +3,7 @@ package tui
 import (
 	"fmt"
 	"gitlab_tui/internal/logger"
-	"gitlab_tui/internal/style"
+	"gitlab_tui/tui/style"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"

@@ -3,7 +3,7 @@ package table
 import (
 	"fmt"
 	"gitlab_tui/internal/icon"
-	"gitlab_tui/internal/style"
+	"gitlab_tui/tui/style"
 	"math"
 	"slices"
 	"time"
@@ -25,7 +25,7 @@ type InitModelParams struct {
 }
 
 func InitModel(params InitModelParams) Model {
-	s := style.Table()
+	s := DefaultStyle()
 
 	t := New(
 		WithColumns(params.Colums),

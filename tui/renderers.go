@@ -2,8 +2,9 @@ package tui
 
 import (
 	"fmt"
-	"gitlab_tui/internal/style"
+	"gitlab_tui/tui/components/table"
 	"gitlab_tui/tui/components/toast"
+	"gitlab_tui/tui/style"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -36,7 +37,7 @@ func (m Model) renderTableView(params renderTableParams) string {
 	}
 	table := lipgloss.JoinVertical(
 		0,
-		style.TableTitle.Render(t),
+		table.TitleStyle.Render(t),
 		style.Base.Render(params.view)+"\n",
 		m.renderPaginator(),
 		style.HelpStyle.Render(params.footer),

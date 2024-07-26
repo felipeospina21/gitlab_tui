@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gitlab_tui/config"
 	"gitlab_tui/internal/logger"
-	"gitlab_tui/internal/style"
+	"gitlab_tui/tui/style"
 	"io"
 	"strings"
 

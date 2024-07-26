@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"gitlab_tui/internal/style"
+	"gitlab_tui/tui/style"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

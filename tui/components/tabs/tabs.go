@@ -41,51 +41,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// TODO: move styles to its own file
-var (
-	docStyle = lipgloss.NewStyle().Padding(1, 2, 1, 2)
-
-	// TODO: Update colors with tokens
-	highlightColor  = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
-	activeTabBorder = lipgloss.Border{
-		Top:         "─",
-		Bottom:      " ",
-		Left:        "│",
-		Right:       "│",
-		TopLeft:     "╭",
-		TopRight:    "╮",
-		BottomLeft:  "┘",
-		BottomRight: "└",
-	}
-
-	tabBorder = lipgloss.Border{
-		Top:         "─",
-		Bottom:      "─",
-		Left:        "│",
-		Right:       "│",
-		TopLeft:     "╭",
-		TopRight:    "╮",
-		BottomLeft:  "┴",
-		BottomRight: "┴",
-	}
-
-	tab = lipgloss.NewStyle().
-		Border(tabBorder, true).
-		BorderForeground(highlightColor).
-		Padding(0, 1)
-
-	activeTab = tab.Border(activeTabBorder, true)
-
-	tabGap = tab.
-		BorderTop(false).
-		BorderLeft(false).
-		BorderRight(false)
-
-	windowStyle = func(w int) lipgloss.Style {
-		return lipgloss.NewStyle().BorderForeground(highlightColor).Padding(2, 0).Align(lipgloss.Center).Border(lipgloss.NormalBorder(), false).UnsetBorderTop().Width(w)
-	}
-)
-
 func (m Model) View() string {
 	doc := strings.Builder{}
 

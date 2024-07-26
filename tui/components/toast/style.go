@@ -1,7 +1,7 @@
 package toast
 
 import (
-	"gitlab_tui/internal/style"
+	"gitlab_tui/tui/style"
 
 	"github.com/charmbracelet/lipgloss"
 )

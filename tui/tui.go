@@ -3,11 +3,11 @@ package tui
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab_tui/internal/style"
 	"gitlab_tui/tui/components"
 	"gitlab_tui/tui/components/table"
 	"gitlab_tui/tui/components/tabs"
 	"gitlab_tui/tui/components/toast"
+	"gitlab_tui/tui/style"
 	"time"
 
 	"github.com/charmbracelet/bubbles/paginator"

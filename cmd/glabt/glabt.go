@@ -11,9 +11,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 const (
@@ -33,13 +31,7 @@ func main() {
 
 func InitModel() tui.Model {
 	l := tui.InitProjectsList()
-
-	// TODO: move to its own file
-	p := paginator.New()
-	p.Type = paginator.Dots
-	p.PerPage = 1
-	p.ActiveDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "235", Dark: "252"}).Render("•")
-	p.InactiveDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "250", Dark: "238"}).Render("•")
+	p := tui.InitPaginatorModel()
 
 	newM := tui.Model{
 		Projects: tui.ProjectsModel{List: l},

@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"gitlab_tui/internal/exec"
 	"gitlab_tui/internal/logger"
-	"gitlab_tui/internal/server"
-	"gitlab_tui/internal/style"
+	"gitlab_tui/server"
 	"gitlab_tui/tui/components/table"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -131,7 +130,7 @@ func (m *Model) viewMergeReqs(window tea.WindowSizeMsg) tea.Cmd {
 		m.MergeRequests.List = table.InitModel(table.InitModelParams{
 			Rows:      r,
 			Colums:    table.GetMergeReqsColums(window.Width - 10),
-			StyleFunc: table.StyleIconsColumns(table.Styles(style.Table()), table.MergeReqsIconCols),
+			StyleFunc: table.StyleIconsColumns(table.Styles(table.DefaultStyle()), table.MergeReqsIconCols),
 		})
 	}
 	return c
