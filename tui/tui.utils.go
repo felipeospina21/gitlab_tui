@@ -138,10 +138,6 @@ func (m Model) UpdateModel(listModel table.Model, commentsModel table.Model, pip
 			Comments:     commentsModel,
 			Pipeline:     pipelinesModel,
 			PipelineJobs: jobsModel,
-			ListKeys:     MergeReqsKeys,
-			CommentsKeys: CommentsKeys,
-			PipelineKeys: PipelinKeys,
-			JobsKeys:     JobsKeys,
 		},
 		Projects: ProjectsModel{
 			List:      projectsModel,

@@ -35,6 +35,7 @@ func (m Model) renderTableView(params renderTableParams) string {
 	} else if params.title != "" && params.subtitle != "" {
 		t = fmt.Sprintf("%s - %s %s | %s", project, params.title, params.subtitle, m.MergeRequests.SelectedMr)
 	}
+	// TODO: create footer status bar (similar to nvim)
 	table := lipgloss.JoinVertical(
 		0,
 		table.TitleStyle.Render(t),

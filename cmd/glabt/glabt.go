@@ -34,15 +34,10 @@ func InitModel() tui.Model {
 	p := tui.InitPaginatorModel()
 
 	newM := tui.Model{
-		Projects: tui.ProjectsModel{List: l},
-		CurrView: tui.ProjectsView,
-		Help:     components.Help{Model: help.New()},
-		MergeRequests: tui.MergeRequestsModel{
-			ListKeys:     tui.MergeReqsKeys,
-			CommentsKeys: tui.CommentsKeys,
-			PipelineKeys: tui.PipelinKeys,
-			JobsKeys:     tui.JobsKeys,
-		},
+		Projects:      tui.ProjectsModel{List: l},
+		CurrView:      tui.ProjectsView,
+		Help:          components.Help{Model: help.New()},
+		MergeRequests: tui.MergeRequestsModel{},
 		Toast: toast.New(toast.Model{
 			Progress: progress.New(
 				progress.WithDefaultGradient(),

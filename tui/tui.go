@@ -29,7 +29,6 @@ type Model struct {
 	Title         string
 	Window        tea.WindowSizeMsg
 	Help          components.Help
-	Keys          GlobalKeyMap
 	Toast         toast.Model
 	Tabs          tabs.Model
 	Paginator     paginator.Model
@@ -132,7 +131,7 @@ func (m Model) View() string {
 			return m.renderTableView(renderTableParams{
 				title:    "Merge Requests",
 				subtitle: "Comments",
-				footer:   m.Help.Model.View(m.MergeRequests.CommentsKeys),
+				footer:   m.Help.Model.View(CommentsKeys),
 				view:     m.MergeRequests.Comments.View(),
 			})
 
@@ -140,7 +139,7 @@ func (m Model) View() string {
 			return m.renderTableView(renderTableParams{
 				title:    "Merge Requests",
 				subtitle: "Pipelines",
-				footer:   m.Help.Model.View(m.MergeRequests.PipelineKeys),
+				footer:   m.Help.Model.View(PipelineKeys),
 				view:     m.MergeRequests.Pipeline.View(),
 			})
 
@@ -148,14 +147,14 @@ func (m Model) View() string {
 			return m.renderTableView(renderTableParams{
 				title:    "Merge Requests",
 				subtitle: "Jobs",
-				footer:   m.Help.Model.View(m.MergeRequests.JobsKeys),
+				footer:   m.Help.Model.View(JobsKeys),
 				view:     m.MergeRequests.PipelineJobs.View(),
 			})
 
 		default:
 			return m.renderTableView(renderTableParams{
 				title:  "Merge Requests",
-				footer: m.Help.Model.View(m.MergeRequests.ListKeys),
+				footer: m.Help.Model.View(MergeReqsKeys),
 				view:   m.MergeRequests.List.View(),
 			})
 

@@ -10,10 +10,6 @@ type MergeRequestsModel struct {
 	Pipeline     table.Model
 	PipelineJobs table.Model
 	SelectedMr   string
-	ListKeys     MergeReqsKeyMap
-	CommentsKeys CommentsKeyMap
-	PipelineKeys PipelineKeyMap
-	JobsKeys     JobsKeyMap
 }
 
 func (m Model) SetMergeRequestsCommentsModel(msg []table.Row) table.Model {

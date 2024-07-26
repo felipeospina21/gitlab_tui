@@ -150,7 +150,7 @@ func (k PipelineKeyMap) FullHelp() [][]key.Binding {
 	}
 }
 
-var PipelinKeys = PipelineKeyMap{
+var PipelineKeys = PipelineKeyMap{
 	OpenInBrowser: key.NewBinding(
 		key.WithKeys("x"),
 		key.WithHelp("x", "open in browser"),
