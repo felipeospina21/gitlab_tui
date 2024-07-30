@@ -1,11 +1,12 @@
 #### todo
 
 - [x] add tabs support (merge requests, comments, pipeplines, issues)
-  - [ ] refactor tabs logic (in update function)
-- [ ] issues api/ issues board
+  - [x] refactor tabs logic (in update function)
+- [x] issues api
   - [x] add paginated api
-  - [ ] extract paginator logic to its own file
-  - [ ] create paginator help model
+  - [x] extract paginator logic to its own file
+  - [x] create paginator help model
+- [ ] Fix tabs/views model to easily navigate back & forth
 - [ ] diff view for code review
 - [ ] Change comments api for discussion api https://docs.gitlab.com/ee/api/discussions.html#merge-requests
 - [ ] Update notification banner for animated toast

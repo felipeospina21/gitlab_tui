@@ -12,10 +12,8 @@ import (
 )
 
 func (m Model) renderPaginator() string {
-	// TODO: remove help text & add help model
 	var b strings.Builder
 	b.WriteString("  " + m.Paginator.View())
-	b.WriteString("\n\n  h/l ←/→ page • q: quit\n")
 	return b.String()
 }
 

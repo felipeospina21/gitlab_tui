@@ -167,12 +167,22 @@ func (m *Model) viewIssues() tea.Cmd {
 func (m *Model) getIssuesNextPage() tea.Cmd {
 	r, pages, err := server.GetIssues(m.Projects.ProjectID, m.Issues.NexPage)
 
+	return m.issuesPageCmd(r, pages, err, "")
+}
+
+func (m *Model) getIssuesPrevPage() tea.Cmd {
+	r, pages, err := server.GetIssues(m.Projects.ProjectID, m.Issues.PrevPage)
+
+	return m.issuesPageCmd(r, pages, err, "")
+}
+
+func (m *Model) issuesPageCmd(r []table.Row, pages server.Pages, err error, msg string) tea.Cmd {
 	c := func() tea.Msg {
 		if err != nil {
 			return err
 		}
 
-		return ""
+		return msg
 	}
 	m.Issues.List.SetRows(r)
 	m.Issues.PrevPage = pages.Prev

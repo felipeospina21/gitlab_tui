@@ -15,6 +15,9 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 	var cmds []tea.Cmd
 	// Global commands
 	switch {
+	case key.Matches(msg, GlobalKeys.Help):
+		m.Help.Model.ShowAll = !m.Help.Model.ShowAll
+
 	case key.Matches(msg, GlobalKeys.Quit):
 		cmds = append(cmds, tea.Quit)
 
@@ -27,15 +30,27 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 	// Tabs
 	switch m.Tabs.ActiveTab {
 	case tabs.MergeRequests:
-		if msg.String() == "tab" {
+		switch {
+		case key.Matches(msg, GlobalKeys.NextTab):
 			if strings.TrimSpace(m.Issues.List.View()) == "" {
 				cmds = append(cmds, m.viewIssues())
 			}
 		}
 
 	case tabs.Issues:
-		if msg.String() == "right" {
-			cmds = append(cmds, m.getIssuesNextPage())
+		switch {
+		case key.Matches(msg, GlobalKeys.NextPage):
+			if m.Issues.NexPage != "" {
+				cmds = append(cmds, m.getIssuesNextPage())
+			}
+
+		case key.Matches(msg, GlobalKeys.NavigateBack):
+			m.Tabs.ActiveTab = m.Tabs.ActiveTab - 1
+
+		case key.Matches(msg, GlobalKeys.PrevPage):
+			if m.Issues.PrevPage != "" {
+				cmds = append(cmds, m.getIssuesPrevPage())
+			}
 		}
 
 	}
@@ -52,16 +67,13 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 
 	case MdView:
 		switch {
-		case key.Matches(msg, MdKeys.NavigateBack):
+		case key.Matches(msg, GlobalKeys.NavigateBack):
 			m.CurrView = m.PrevView
 		}
 		m.Md.Viewport, cmd = m.Md.Viewport.Update(msg)
 
 	case MrTableView:
 		switch {
-		case key.Matches(msg, MergeReqsKeys.Help):
-			m.Help.Model.ShowAll = !m.Help.Model.ShowAll
-
 		case key.Matches(msg, MergeReqsKeys.OpenInBrowser):
 			m.openInBrowser(table.MergeReqsCols.URL.Idx, MrTableView)
 
@@ -83,7 +95,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 		case key.Matches(msg, MergeReqsKeys.Refetch):
 			m.refetchMrList()
 
-		case key.Matches(msg, MergeReqsKeys.NavigateBack):
+		case key.Matches(msg, GlobalKeys.NavigateBack):
 			m.CurrView = ProjectsView
 
 		}
@@ -100,7 +112,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 		case key.Matches(msg, CommentsKeys.Description):
 			m.viewCommentContent()
 
-		case key.Matches(msg, CommentsKeys.NavigateBack):
+		case key.Matches(msg, GlobalKeys.NavigateBack):
 			m.CurrView = MrTableView
 
 		}
@@ -118,7 +130,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 		case key.Matches(msg, PipelineKeys.OpenInBrowser):
 			m.openInBrowser(table.PipelinesCols.URL.Idx, MrPipelinesView)
 
-		case key.Matches(msg, PipelineKeys.NavigateBack):
+		case key.Matches(msg, GlobalKeys.NavigateBack):
 			m.CurrView = MrTableView
 
 		}
@@ -126,7 +138,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 
 	case JobsView:
 		switch {
-		case key.Matches(msg, JobsKeys.NavigateBack):
+		case key.Matches(msg, GlobalKeys.NavigateBack):
 			m.CurrView = MrPipelinesView
 
 		case key.Matches(msg, JobsKeys.OpenInBrowser):

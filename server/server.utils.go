@@ -5,6 +5,7 @@ import (
 	"gitlab_tui/internal/icon"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -47,22 +48,44 @@ func renderIcon(b bool, i string) string {
 	return icon.Empty
 }
 
-func getPagesLinks(links []string) (string, string) {
+func getPagesLinks(links []string) (string, string, error) {
 	// First page, only has Next page link
 	if len(links) == 3 {
-		return "", parseLink(links[0])
+		l, rel := parseLink(links[0])
+		ok, err := isPrevLink(rel)
+		if err != nil {
+			return "", "", err
+		}
+		if ok {
+			return l, "", nil
+		} else {
+			return "", l, nil
+		}
 	}
 
-	return parseLink(links[0]), parseLink(links[1])
+	prev, _ := parseLink(links[0])
+	next, _ := parseLink(links[1])
+
+	return prev, next, nil
 }
 
-func parseLink(l string) string {
-	b, _, ok := strings.Cut(l, ";")
+func parseLink(l string) (string, string) {
+	b, a, ok := strings.Cut(l, ";")
 	if ok {
 		trimed := strings.TrimSpace(b)
 		parsed := strings.TrimSuffix(strings.TrimPrefix(trimed, "<"), ">")
-		return parsed
+		return parsed, a
 	}
 
-	return l
+	return l, ""
+}
+
+func isPrevLink(s string) (bool, error) {
+	pattern := "prev"
+	match, err := regexp.MatchString(pattern, s)
+	if err != nil {
+		return false, err
+	}
+
+	return match, nil
 }

@@ -162,7 +162,7 @@ func (m Model) View() string {
 	case tabs.Issues:
 		return m.renderTableView(renderTableParams{
 			title:  "Issues",
-			footer: "help model",
+			footer: m.Help.Model.View(GlobalKeys),
 			view:   m.Issues.List.View(),
 		})
 

@@ -5,19 +5,27 @@ import (
 )
 
 type GlobalKeyMap struct {
-	Help       key.Binding
-	Quit       key.Binding
-	ThrowError key.Binding
+	Help         key.Binding
+	Quit         key.Binding
+	ThrowError   key.Binding
+	NextTab      key.Binding
+	PrevTab      key.Binding
+	NextPage     key.Binding
+	PrevPage     key.Binding
+	NavigateBack key.Binding
+}
+
+func (k GlobalKeyMap) commonKeys() []key.Binding {
+	return []key.Binding{k.Help, k.Quit, k.NavigateBack, k.NextTab, k.PrevTab, k.NextPage, k.PrevPage}
 }
 
 func (k GlobalKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit}
+	return k.commonKeys()
 }
 
 func (k GlobalKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{},               // first column
-		{k.Help, k.Quit}, // second column
+		k.commonKeys(),
 	}
 }
 
@@ -29,6 +37,26 @@ var GlobalKeys = GlobalKeyMap{
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
 		key.WithHelp("q", "quit"),
+	),
+	NextTab: key.NewBinding(
+		key.WithKeys("tab"),
+		key.WithHelp("tab", "next tab"),
+	),
+	PrevTab: key.NewBinding(
+		key.WithKeys("shift+tab"),
+		key.WithHelp("shift+tab", "prev tab"),
+	),
+	NextPage: key.NewBinding(
+		key.WithKeys("right"),
+		key.WithHelp("->", "next page"),
+	),
+	PrevPage: key.NewBinding(
+		key.WithKeys("left"),
+		key.WithHelp("<-", "prev page"),
+	),
+	NavigateBack: key.NewBinding(
+		key.WithKeys("backspace"),
+		key.WithHelp("backspace", "navigate back"),
 	),
 
 	// TODO: make this available only when program is run whith certain cmd
@@ -43,20 +71,19 @@ type MergeReqsKeyMap struct {
 	Pipelines     key.Binding
 	OpenInBrowser key.Binding
 	Refetch       key.Binding
-	NavigateBack  key.Binding
 	Description   key.Binding
 	Merge         key.Binding
 	GlobalKeyMap
 }
 
 func (k MergeReqsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.Comments, k.Pipelines, k.Description, k.Refetch, k.OpenInBrowser, k.NavigateBack, k.Merge}
+	return []key.Binding{k.Comments, k.Pipelines, k.Description, k.OpenInBrowser, k.Merge, k.NextTab, k.PrevTab, k.NavigateBack, k.Help, k.Quit}
 }
 
 func (k MergeReqsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Comments, k.Pipelines, k.Description, k.Refetch, k.OpenInBrowser, k.NavigateBack}, // first column
-		{k.Merge, k.Help, k.Quit}, // second column
+		k.commonKeys(), // first column
+		{k.Comments, k.Pipelines, k.Description, k.OpenInBrowser, k.Merge, k.Refetch}, // second column
 	}
 }
 
@@ -77,10 +104,6 @@ var MergeReqsKeys = MergeReqsKeyMap{
 		key.WithKeys("r"),
 		key.WithHelp("r", "refetch"),
 	),
-	NavigateBack: key.NewBinding(
-		key.WithKeys("backspace"),
-		key.WithHelp("backspace", "navigate back"),
-	),
 	Description: key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "view description"),
@@ -96,18 +119,17 @@ type CommentsKeyMap struct {
 	Refetch       key.Binding
 	OpenInBrowser key.Binding
 	Description   key.Binding
-	NavigateBack  key.Binding
 	GlobalKeyMap
 }
 
 func (k CommentsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.Description, k.NavigateBack, k.OpenInBrowser, k.Refetch}
+	return []key.Binding{k.Description, k.OpenInBrowser, k.Refetch, k.NextTab, k.PrevTab, k.NavigateBack, k.Help, k.Quit}
 }
 
 func (k CommentsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Description, k.NavigateBack, k.OpenInBrowser, k.Refetch}, // first column
-		{k.Help, k.Quit}, // second column
+		k.commonKeys(),
+		{k.Description, k.OpenInBrowser, k.Refetch},
 	}
 }
 
@@ -120,10 +142,6 @@ var CommentsKeys = CommentsKeyMap{
 		key.WithKeys("r"),
 		key.WithHelp("r", "refetch"),
 	),
-	NavigateBack: key.NewBinding(
-		key.WithKeys("backspace"),
-		key.WithHelp("backspace", "navigate back"),
-	),
 	Description: key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "view description"),
@@ -135,18 +153,17 @@ type PipelineKeyMap struct {
 	Jobs          key.Binding
 	Refetch       key.Binding
 	OpenInBrowser key.Binding
-	NavigateBack  key.Binding
 	GlobalKeyMap
 }
 
 func (k PipelineKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.Jobs, k.NavigateBack, k.OpenInBrowser, k.Refetch}
+	return []key.Binding{k.Jobs, k.OpenInBrowser, k.Refetch, k.NextTab, k.PrevTab, k.NavigateBack, k.Help, k.Quit}
 }
 
 func (k PipelineKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Jobs, k.NavigateBack, k.OpenInBrowser, k.Refetch}, // first column
-		{k.Help, k.Quit}, // second column
+		k.commonKeys(),
+		{k.Jobs, k.OpenInBrowser, k.Refetch},
 	}
 }
 
@@ -159,10 +176,6 @@ var PipelineKeys = PipelineKeyMap{
 		key.WithKeys("r"),
 		key.WithHelp("r", "refetch"),
 	),
-	NavigateBack: key.NewBinding(
-		key.WithKeys("backspace"),
-		key.WithHelp("backspace", "navigate back"),
-	),
 	Jobs: key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "view jobs"),
@@ -173,18 +186,17 @@ var PipelineKeys = PipelineKeyMap{
 type JobsKeyMap struct {
 	Refetch       key.Binding
 	OpenInBrowser key.Binding
-	NavigateBack  key.Binding
 	GlobalKeyMap
 }
 
 func (k JobsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.NavigateBack, k.OpenInBrowser, k.Refetch}
+	return []key.Binding{k.OpenInBrowser, k.Refetch, k.NextTab, k.PrevTab, k.NavigateBack, k.Help, k.Quit}
 }
 
 func (k JobsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.NavigateBack, k.OpenInBrowser, k.Refetch}, // first column
-		{k.Help, k.Quit}, // second column
+		k.commonKeys(),
+		{k.OpenInBrowser, k.Refetch},
 	}
 }
 
@@ -197,17 +209,12 @@ var JobsKeys = JobsKeyMap{
 		key.WithKeys("r"),
 		key.WithHelp("r", "refetch"),
 	),
-	NavigateBack: key.NewBinding(
-		key.WithKeys("backspace"),
-		key.WithHelp("backspace", "navigate back"),
-	),
 	GlobalKeyMap: GlobalKeys,
 }
 
 type ProjectsKeyMap struct {
 	ViewMRs key.Binding
 	GlobalKeyMap
-	// list.KeyMap
 }
 
 func (k ProjectsKeyMap) ShortHelp() []key.Binding {
@@ -227,7 +234,6 @@ var ProjectsKeys = ProjectsKeyMap{
 		key.WithHelp("enter", "view merge requests"),
 	),
 	GlobalKeyMap: GlobalKeys,
-	// KeyMap: list.DefaultKeyMap(),
 }
 
 type MdKeyMap struct {
@@ -236,20 +242,15 @@ type MdKeyMap struct {
 }
 
 func (k MdKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.NavigateBack}
+	return k.commonKeys()
 }
 
 func (k MdKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.NavigateBack}, // first column
-		// {k.ShowFullHelp, k.Quit, k.Filter, k.ReloadConfig}, // second column
+		k.commonKeys(),
 	}
 }
 
 var MdKeys = MdKeyMap{
-	NavigateBack: key.NewBinding(
-		key.WithKeys("backspace"),
-		key.WithHelp("backspace", "navigate back"),
-	),
 	GlobalKeyMap: GlobalKeys,
 }

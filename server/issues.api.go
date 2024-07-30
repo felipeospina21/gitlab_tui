@@ -28,14 +28,14 @@ type GetIssuesResponse = struct {
 	ID         int      `json:"iid"`
 }
 
-type pages struct {
+type Pages struct {
 	Prev  string
 	Next  string
 	Total int
 }
 
 // TODO: add state param to fetch opened or closed issues
-func GetIssues(projectID string, pageURL string) ([]table.Row, pages, error) {
+func GetIssues(projectID string, pageURL string) ([]table.Row, Pages, error) {
 	var url, params string
 
 	if pageURL != "" {
@@ -50,25 +50,25 @@ func GetIssues(projectID string, pageURL string) ([]table.Row, pages, error) {
 
 	responseData, res, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
 	if err != nil {
-		return nil, pages{}, err
+		return nil, Pages{}, err
 	}
 
 	var r []GetIssuesResponse
 	if err := json.Unmarshal(responseData, &r); err != nil {
-		return nil, pages{}, err
+		return nil, Pages{}, err
 	}
 
 	// Get headers
 	th := res.Header.Get("x-total-pages")
 	lh := res.Header.Get("link")
-	prevPage, nextPage := getPagesLinks(strings.Split(lh, ","))
+	prevPage, nextPage, _ := getPagesLinks(strings.Split(lh, ","))
 	totalPages, e := strconv.Atoi(th)
 
 	if e != nil {
-		return nil, pages{}, e
+		return nil, Pages{}, e
 	}
 
-	p := pages{Prev: prevPage, Next: nextPage, Total: totalPages}
+	p := Pages{Prev: prevPage, Next: nextPage, Total: totalPages}
 
 	// transforms response interface to match tbl Row
 	var rows []table.Row
