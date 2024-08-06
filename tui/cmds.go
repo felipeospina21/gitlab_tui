@@ -190,3 +190,10 @@ func (m *Model) issuesPageCmd(r []table.Row, pages server.Pages, err error, msg 
 
 	return c
 }
+
+func (m *Model) viewIssueDescription() {
+	content := string(m.getSelectedRow(table.IssuesListCols.Desc.Idx, IssuesListView))
+	m.setResponseContent(content)
+	m.PrevView = IssuesListView
+	m.CurrView = MdView
+}

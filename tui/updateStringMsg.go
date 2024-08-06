@@ -32,7 +32,7 @@ func (m *Model) updateStringMsg(msg string) (Model, tea.Cmd) {
 		// cmds = append(cmds, cmd)
 
 	case SuccessMessage.IssuesList:
-		// unused currently
+		m.CurrView = IssuesListView
 
 	}
 	return *m, cmd

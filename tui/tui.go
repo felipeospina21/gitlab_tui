@@ -41,7 +41,7 @@ const (
 	JobsView
 	MdView
 	ProjectsView
-	TabsView
+	IssuesListView
 )
 
 type SuccessMsg struct {
@@ -115,6 +115,7 @@ func (m Model) View() string {
 	switch m.Tabs.ActiveTab {
 	case tabs.MergeRequests:
 		switch m.CurrView {
+		// FIX: when navigating back from Issues List it never gets here (active tab is Issues)
 		case ProjectsView:
 			projects := style.ListItemStyle.Render(m.Projects.List.View())
 
@@ -160,11 +161,17 @@ func (m Model) View() string {
 
 		}
 	case tabs.Issues:
-		return m.renderTableView(renderTableParams{
-			title:  "Issues",
-			footer: m.Help.Model.View(GlobalKeys),
-			view:   m.Issues.List.View(),
-		})
+		switch m.CurrView {
+		case IssuesListView:
+			return m.renderTableView(renderTableParams{
+				title:  "Issues",
+				footer: m.Help.Model.View(IssuesKeys),
+				view:   m.Issues.List.View(),
+			})
+
+		case MdView:
+			return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.Issues.List.SelectedRow()[table.IssuesListCols.Title.Idx]), m.Md.Viewport.View(), m.footerView())
+		}
 
 	case tabs.Pipelines:
 		return m.renderTableView(renderTableParams{
@@ -191,8 +198,11 @@ func (m Model) getSelectedRow(idx table.TableColIndex, view views) string {
 	case JobsView:
 		return m.MergeRequests.PipelineJobs.SelectedRow()[idx]
 
+	case IssuesListView:
+		return m.Issues.List.SelectedRow()[idx]
+
 	default:
-		return ""
+		return "View Not supported"
 
 	}
 }

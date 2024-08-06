@@ -44,8 +44,8 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 				cmds = append(cmds, m.getIssuesNextPage())
 			}
 
-		case key.Matches(msg, GlobalKeys.NavigateBack):
-			m.Tabs.ActiveTab = m.Tabs.ActiveTab - 1
+		// case key.Matches(msg, GlobalKeys.NavigateBack):
+		// 	m.Tabs.ActiveTab = m.Tabs.ActiveTab - 1
 
 		case key.Matches(msg, GlobalKeys.PrevPage):
 			if m.Issues.PrevPage != "" {
@@ -149,6 +149,21 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 
 		}
 		m.MergeRequests.PipelineJobs, cmd = m.MergeRequests.PipelineJobs.Update(msg)
+
+	case IssuesListView:
+		switch {
+		case key.Matches(msg, IssuesKeys.Description):
+			m.viewIssueDescription()
+
+		case key.Matches(msg, IssuesKeys.Refetch):
+		// TODO: implement refetch
+
+		case key.Matches(msg, IssuesKeys.OpenInBrowser):
+			m.openInBrowser(table.IssuesListCols.URL.Idx, IssuesListView)
+
+		case key.Matches(msg, GlobalKeys.NavigateBack):
+			m.CurrView = ProjectsView
+		}
 
 	}
 

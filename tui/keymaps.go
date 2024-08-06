@@ -212,6 +212,42 @@ var JobsKeys = JobsKeyMap{
 	GlobalKeyMap: GlobalKeys,
 }
 
+// Issues List
+type IssuesKeyMap struct {
+	Refetch       key.Binding
+	OpenInBrowser key.Binding
+	Description   key.Binding
+	GlobalKeyMap
+}
+
+func (k IssuesKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Description, k.OpenInBrowser, k.Refetch, k.NextTab, k.PrevTab, k.NavigateBack, k.Help, k.Quit}
+}
+
+func (k IssuesKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		k.commonKeys(),
+		{k.Description, k.OpenInBrowser, k.Refetch},
+	}
+}
+
+var IssuesKeys = IssuesKeyMap{
+	OpenInBrowser: key.NewBinding(
+		key.WithKeys("x"),
+		key.WithHelp("x", "open in browser"),
+	),
+	Refetch: key.NewBinding(
+		key.WithKeys("r"),
+		key.WithHelp("r", "refetch"),
+	),
+	Description: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "view issue description"),
+	),
+	GlobalKeyMap: GlobalKeys,
+}
+
+// Projects
 type ProjectsKeyMap struct {
 	ViewMRs key.Binding
 	GlobalKeyMap
