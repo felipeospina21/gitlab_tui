@@ -33,7 +33,7 @@ func (m *Model) updateWindowSize(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 
 	case HomeView:
 		h, v := style.ListItemStyle.GetFrameSize()
-		m.Projects.List.SetSize(msg.Width-h, (msg.Height-v)/2)
+		m.Projects.List.SetSize(msg.Width-h, (msg.Height - v - 4))
 
 	}
 

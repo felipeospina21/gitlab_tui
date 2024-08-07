@@ -12,11 +12,11 @@ var (
 	ListPaginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	ListHelpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
 	ListDocStyle          = lipgloss.NewStyle().
-				MarginTop(1).
 				PaddingRight(4).
 				Foreground(lipgloss.Color(Violet[300])).
 				BorderRight(true).
 				BorderStyle(lipgloss.NormalBorder()).
+				BorderForeground(lipgloss.Color(DarkGray)).
 				Width(50) // TODO: Set width in config file
 )
 

@@ -71,3 +71,5 @@ var Violet = colorShades{
 	900: "#4003af",
 	950: "#250077",
 }
+
+var DarkGray = "#3f4145"
