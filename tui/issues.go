@@ -9,6 +9,7 @@ type IssuesModel struct {
 	SelectedIssue string
 	PrevPage      string
 	NexPage       string
+	HasData       bool
 }
 
 func (m Model) SetIssuesListModel(msg []table.Row) table.Model {

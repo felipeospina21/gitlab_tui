@@ -35,14 +35,14 @@ func (m *Model) refetchMrList() {
 }
 
 func (m *Model) viewDescription() {
-	content := string(m.getSelectedRow(table.MergeReqsCols.Desc.Idx, MrTableView))
+	content := string(m.getSelectedRow(table.MergeReqsCols.Desc.Idx, MainTableView))
 	m.setResponseContent(content)
-	m.PrevView = MrTableView
+	m.PrevView = MainTableView
 	m.CurrView = MdView
 }
 
 func (m *Model) viewComments() tea.Cmd {
-	r, err := server.GetMergeRequestComments(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
+	r, err := server.GetMergeRequestComments(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView))
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -55,7 +55,7 @@ func (m *Model) viewComments() tea.Cmd {
 }
 
 func (m *Model) viewPipelines() tea.Cmd {
-	r, err := server.GetMergeRequestPipelines(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
+	r, err := server.GetMergeRequestPipelines(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView))
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -67,7 +67,7 @@ func (m *Model) viewPipelines() tea.Cmd {
 }
 
 func (m *Model) mergeMR() tea.Cmd {
-	_, err := server.MergeMR(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
+	_, err := server.MergeMR(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView))
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -80,7 +80,7 @@ func (m *Model) mergeMR() tea.Cmd {
 
 // Comments Table
 func (m *Model) refetchComments() {
-	r, err := server.GetMergeRequestComments(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
+	r, err := server.GetMergeRequestComments(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView))
 	if err != nil {
 		logger.Error(err)
 	}
@@ -95,14 +95,14 @@ func (m *Model) viewCommentContent() {
 }
 
 func (m *Model) navigateToMrComment() {
-	selectedURL := m.getSelectedRow(table.MergeReqsCols.URL.Idx, MrTableView)
+	selectedURL := m.getSelectedRow(table.MergeReqsCols.URL.Idx, MainTableView)
 	commentID := m.getSelectedRow(table.CommentsCols.ID.Idx, MrCommentsView)
 	exec.Openbrowser(fmt.Sprintf("%s#note_%s", selectedURL, commentID))
 }
 
 // Pipelines Table
 func (m *Model) refetchPipelines() {
-	r, err := server.GetMergeRequestPipelines(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MrTableView))
+	r, err := server.GetMergeRequestPipelines(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView))
 	if err != nil {
 		logger.Error(err)
 	}
@@ -201,8 +201,8 @@ func (m *Model) issuesPageCmd(r []table.Row, pages server.Pages, err error, msg 
 }
 
 func (m *Model) viewIssueDescription() {
-	content := string(m.getSelectedRow(table.IssuesListCols.Desc.Idx, IssuesListView))
+	content := string(m.getSelectedRow(table.IssuesListCols.Desc.Idx, MainTableView))
 	m.setResponseContent(content)
-	m.PrevView = IssuesListView
+	m.PrevView = MainTableView
 	m.CurrView = MdView
 }

@@ -11,7 +11,7 @@ func (m *Model) updateStringMsg(msg string) (Model, tea.Cmd) {
 
 	switch msg {
 	case SuccessMessage.MRFetch:
-		m.CurrView = MrTableView
+		m.CurrView = MainTableView
 
 	case SuccessMessage.CommentsFetch:
 		m.CurrView = MrCommentsView
@@ -32,7 +32,8 @@ func (m *Model) updateStringMsg(msg string) (Model, tea.Cmd) {
 		// cmds = append(cmds, cmd)
 
 	case SuccessMessage.IssuesList:
-		m.CurrView = IssuesListView
+		m.CurrView = MainTableView
+		m.Issues.HasData = true
 
 	}
 	return *m, cmd

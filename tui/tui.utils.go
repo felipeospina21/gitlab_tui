@@ -112,15 +112,15 @@ func (m *Model) resizeProjectsList(msg tea.WindowSizeMsg) {
 }
 
 func (m *Model) resizeMdView(msg tea.WindowSizeMsg) {
-	headerHeight := lipgloss.Height(m.headerView(m.getSelectedRow(table.MergeReqsCols.Title.Idx, MrTableView)))
+	headerHeight := lipgloss.Height(m.headerView(m.getSelectedRow(table.MergeReqsCols.Title.Idx, MainTableView)))
 	footerHeight := lipgloss.Height(m.footerView())
 	verticalMarginHeight := headerHeight + footerHeight
 	m.Md.Viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
 
 	var content string
 	switch m.PrevView {
-	case MrTableView:
-		content = m.getSelectedRow(table.MergeReqsCols.Desc.Idx, MrTableView)
+	case MainTableView:
+		content = m.getSelectedRow(table.MergeReqsCols.Desc.Idx, MainTableView)
 
 	case MrCommentsView:
 		content = m.getSelectedRow(table.CommentsCols.Body.Idx, MrCommentsView)

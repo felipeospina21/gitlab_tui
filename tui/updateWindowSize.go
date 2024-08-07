@@ -16,7 +16,7 @@ func (m *Model) updateWindowSize(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 	cmd = m.setViewportViewSize(msg)
 
 	switch m.CurrView {
-	case MrTableView:
+	case MainTableView:
 		return m.resizeMrTable(msg)
 
 	case MrCommentsView:

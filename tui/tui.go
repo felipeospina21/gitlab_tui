@@ -38,13 +38,12 @@ type Model struct {
 }
 
 const (
-	MrTableView views = iota
+	MainTableView views = iota
 	MrCommentsView
 	MrPipelinesView
 	JobsView
 	MdView
 	HomeView
-	IssuesListView
 )
 
 type SuccessMsg struct {
@@ -156,7 +155,7 @@ func (m Model) View() string {
 		switch m.Tabs.ActiveTab {
 		case tabs.MergeRequests:
 			switch m.CurrView {
-			case MrTableView:
+			case MainTableView:
 				return m.renderTableView(renderTableParams{
 					title:  "Merge Requests",
 					footer: m.Help.Model.View(MergeReqsKeys),
@@ -205,7 +204,7 @@ func (m Model) View() string {
 			}
 		case tabs.Issues:
 			switch m.CurrView {
-			case IssuesListView:
+			case MainTableView:
 				return m.renderTableView(renderTableParams{
 					title:  "Issues",
 					footer: m.Help.Model.View(IssuesKeys),
@@ -230,8 +229,14 @@ func (m Model) View() string {
 
 func (m Model) getSelectedRow(idx table.TableColIndex, view views) string {
 	switch view {
-	case MrTableView:
-		return m.MergeRequests.List.SelectedRow()[idx]
+	case MainTableView:
+		if m.Tabs.ActiveTab == tabs.MergeRequests {
+			return m.MergeRequests.List.SelectedRow()[idx]
+		}
+		if m.Tabs.ActiveTab == tabs.Issues {
+			return m.Issues.List.SelectedRow()[idx]
+		}
+		return "tab not supported (getSelectedRow)"
 
 	case MrCommentsView:
 		return m.MergeRequests.Comments.SelectedRow()[idx]
@@ -242,9 +247,6 @@ func (m Model) getSelectedRow(idx table.TableColIndex, view views) string {
 	case JobsView:
 		return m.MergeRequests.PipelineJobs.SelectedRow()[idx]
 
-	case IssuesListView:
-		return m.Issues.List.SelectedRow()[idx]
-
 	default:
 		return "View Not supported"
 
@@ -252,7 +254,7 @@ func (m Model) getSelectedRow(idx table.TableColIndex, view views) string {
 }
 
 func (m *Model) setSelectedMr() {
-	m.MergeRequests.SelectedMr = m.getSelectedRow(table.MergeReqsCols.Title.Idx, MrTableView)
+	m.MergeRequests.SelectedMr = m.getSelectedRow(table.MergeReqsCols.Title.Idx, MainTableView)
 }
 
 // TODO: Move these to its own module?

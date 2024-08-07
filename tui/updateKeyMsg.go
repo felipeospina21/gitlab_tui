@@ -4,7 +4,6 @@ import (
 	"errors"
 	"gitlab_tui/tui/components/table"
 	"gitlab_tui/tui/components/tabs"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -32,7 +31,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 	case tabs.MergeRequests:
 		switch {
 		case key.Matches(msg, GlobalKeys.NextTab):
-			if strings.TrimSpace(m.Issues.List.View()) == "" {
+			if !m.Issues.HasData {
 				cmds = append(cmds, m.viewIssues())
 			}
 		}
@@ -58,12 +57,14 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 	// Views commands
 	switch m.CurrView {
 	case HomeView:
-		if msg.String() == "ctrl+o" {
-			m.toggleSidePanel()
-		}
 		switch {
+		case key.Matches(msg, GlobalKeys.ToggleSidePanel):
+			m.toggleSidePanel()
+
 		case key.Matches(msg, ProjectsKeys.ViewMRs):
 			m.toggleSidePanel()
+			m.Issues.HasData = false
+			m.Tabs.ActiveTab = tabs.MergeRequests
 			c := m.viewMergeReqs(m.Window)
 			cmds = append(cmds, c)
 		}
@@ -76,38 +77,56 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 		}
 		m.Md.Viewport, cmd = m.Md.Viewport.Update(msg)
 
-	case MrTableView:
-		if msg.String() == "ctrl+o" {
+	case MainTableView:
+		if key.Matches(msg, GlobalKeys.ToggleSidePanel) {
 			m.toggleSidePanel()
 		}
 
-		switch {
-		case key.Matches(msg, MergeReqsKeys.OpenInBrowser):
-			m.openInBrowser(table.MergeReqsCols.URL.Idx, MrTableView)
+		switch m.Tabs.ActiveTab {
+		case tabs.MergeRequests:
+			switch {
+			case key.Matches(msg, MergeReqsKeys.OpenInBrowser):
+				m.openInBrowser(table.MergeReqsCols.URL.Idx, MainTableView)
 
-		case key.Matches(msg, MergeReqsKeys.Comments):
-			c := m.viewComments()
-			cmds = append(cmds, c)
+			case key.Matches(msg, MergeReqsKeys.Comments):
+				c := m.viewComments()
+				cmds = append(cmds, c)
 
-		case key.Matches(msg, MergeReqsKeys.Pipelines):
-			c := m.viewPipelines()
-			cmds = append(cmds, c)
+			case key.Matches(msg, MergeReqsKeys.Pipelines):
+				c := m.viewPipelines()
+				cmds = append(cmds, c)
 
-		case key.Matches(msg, MergeReqsKeys.Merge):
-			c := m.mergeMR()
-			cmds = append(cmds, c)
+			case key.Matches(msg, MergeReqsKeys.Merge):
+				c := m.mergeMR()
+				cmds = append(cmds, c)
 
-		case key.Matches(msg, MergeReqsKeys.Description):
-			m.viewDescription()
+			case key.Matches(msg, MergeReqsKeys.Description):
+				m.viewDescription()
 
-		case key.Matches(msg, MergeReqsKeys.Refetch):
-			m.refetchMrList()
+			case key.Matches(msg, MergeReqsKeys.Refetch):
+				m.refetchMrList()
 
-		case key.Matches(msg, GlobalKeys.NavigateBack):
-			m.CurrView = HomeView
+			case key.Matches(msg, GlobalKeys.NavigateBack):
+				m.CurrView = HomeView
 
+			}
+			m.MergeRequests.List, cmd = m.MergeRequests.List.Update(msg)
+
+		case tabs.Issues:
+			switch {
+			case key.Matches(msg, IssuesKeys.Description):
+				m.viewIssueDescription()
+
+			case key.Matches(msg, IssuesKeys.Refetch):
+			// TODO: implement refetch
+
+			case key.Matches(msg, IssuesKeys.OpenInBrowser):
+				m.openInBrowser(table.IssuesListCols.URL.Idx, MainTableView)
+
+			case key.Matches(msg, GlobalKeys.NavigateBack):
+				m.CurrView = HomeView
+			}
 		}
-		m.MergeRequests.List, cmd = m.MergeRequests.List.Update(msg)
 
 	case MrCommentsView:
 		switch {
@@ -121,7 +140,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 			m.viewCommentContent()
 
 		case key.Matches(msg, GlobalKeys.NavigateBack):
-			m.CurrView = MrTableView
+			m.CurrView = MainTableView
 
 		}
 		m.MergeRequests.Comments, cmd = m.MergeRequests.Comments.Update(msg)
@@ -139,7 +158,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 			m.openInBrowser(table.PipelinesCols.URL.Idx, MrPipelinesView)
 
 		case key.Matches(msg, GlobalKeys.NavigateBack):
-			m.CurrView = MrTableView
+			m.CurrView = MainTableView
 
 		}
 		m.MergeRequests.Pipeline, cmd = m.MergeRequests.Pipeline.Update(msg)
@@ -157,21 +176,6 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 
 		}
 		m.MergeRequests.PipelineJobs, cmd = m.MergeRequests.PipelineJobs.Update(msg)
-
-	case IssuesListView:
-		switch {
-		case key.Matches(msg, IssuesKeys.Description):
-			m.viewIssueDescription()
-
-		case key.Matches(msg, IssuesKeys.Refetch):
-		// TODO: implement refetch
-
-		case key.Matches(msg, IssuesKeys.OpenInBrowser):
-			m.openInBrowser(table.IssuesListCols.URL.Idx, IssuesListView)
-
-		case key.Matches(msg, GlobalKeys.NavigateBack):
-			m.CurrView = HomeView
-		}
 
 	}
 

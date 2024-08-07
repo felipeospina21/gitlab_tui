@@ -5,18 +5,19 @@ import (
 )
 
 type GlobalKeyMap struct {
-	Help         key.Binding
-	Quit         key.Binding
-	ThrowError   key.Binding
-	NextTab      key.Binding
-	PrevTab      key.Binding
-	NextPage     key.Binding
-	PrevPage     key.Binding
-	NavigateBack key.Binding
+	Help            key.Binding
+	Quit            key.Binding
+	ThrowError      key.Binding
+	NextTab         key.Binding
+	PrevTab         key.Binding
+	NextPage        key.Binding
+	PrevPage        key.Binding
+	NavigateBack    key.Binding
+	ToggleSidePanel key.Binding
 }
 
 func (k GlobalKeyMap) commonKeys() []key.Binding {
-	return []key.Binding{k.Help, k.Quit, k.NavigateBack, k.NextTab, k.PrevTab, k.NextPage, k.PrevPage}
+	return []key.Binding{k.Help, k.ToggleSidePanel, k.Quit, k.NavigateBack, k.NextTab, k.PrevTab, k.NextPage, k.PrevPage}
 }
 
 func (k GlobalKeyMap) ShortHelp() []key.Binding {
@@ -57,6 +58,10 @@ var GlobalKeys = GlobalKeyMap{
 	NavigateBack: key.NewBinding(
 		key.WithKeys("backspace"),
 		key.WithHelp("backspace", "navigate back"),
+	),
+	ToggleSidePanel: key.NewBinding(
+		key.WithKeys("ctrl+o"),
+		key.WithHelp("ctrl+o", "toggle side panel"),
 	),
 
 	// TODO: make this available only when program is run whith certain cmd
