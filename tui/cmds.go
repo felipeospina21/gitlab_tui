@@ -15,6 +15,15 @@ func (m *Model) openInBrowser(tableColIdx table.TableColIndex, view views) {
 	exec.Openbrowser(selectedURL)
 }
 
+func (m *Model) toggleSidePanel() {
+	m.isSidePanelOpen = !m.isSidePanelOpen
+	if m.isSidePanelOpen {
+		m.CurrView = HomeView
+	} else {
+		m.CurrView = m.PrevView
+	}
+}
+
 // Merge Requests Table
 func (m *Model) refetchMrList() {
 	r, err := server.GetMergeRequests(m.Projects.ProjectID)

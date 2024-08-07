@@ -11,7 +11,13 @@ var (
 	ListSelectedItemStyle = lipgloss.NewStyle().MarginLeft(2).MarginTop(1).PaddingLeft(2).Foreground(lipgloss.Color(Violet[50])).Background(lipgloss.Color(Violet[800]))
 	ListPaginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	ListHelpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
-	// ListQuitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
+	ListDocStyle          = lipgloss.NewStyle().
+				MarginTop(1).
+				PaddingRight(4).
+				Foreground(lipgloss.Color(Violet[300])).
+				BorderRight(true).
+				BorderStyle(lipgloss.NormalBorder()).
+				Width(50) // TODO: Set width in config file
 )
 
 var (

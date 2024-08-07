@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab_tui/tui/components"
+	"gitlab_tui/tui/components/progress"
 	"gitlab_tui/tui/components/table"
 	"gitlab_tui/tui/components/tabs"
 	"gitlab_tui/tui/components/toast"
 	"gitlab_tui/tui/style"
 	"time"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -20,18 +22,19 @@ type (
 )
 
 type Model struct {
-	Projects      ProjectsModel
-	MergeRequests MergeRequestsModel
-	Issues        IssuesModel
-	Md            MdModel
-	CurrView      views
-	PrevView      views
-	Title         string
-	Window        tea.WindowSizeMsg
-	Help          components.Help
-	Toast         toast.Model
-	Tabs          tabs.Model
-	Paginator     paginator.Model
+	Projects        ProjectsModel
+	MergeRequests   MergeRequestsModel
+	Issues          IssuesModel
+	Md              MdModel
+	CurrView        views
+	PrevView        views
+	Title           string
+	Window          tea.WindowSizeMsg
+	Help            components.Help
+	Toast           toast.Model
+	Tabs            tabs.Model
+	Paginator       paginator.Model
+	isSidePanelOpen bool
 }
 
 const (
@@ -40,7 +43,7 @@ const (
 	MrPipelinesView
 	JobsView
 	MdView
-	ProjectsView
+	HomeView
 	IssuesListView
 )
 
@@ -70,6 +73,34 @@ const (
 )
 
 type tickMsg time.Time
+
+func InitMainModel() Model {
+	l := InitProjectsList()
+	p := InitPaginatorModel()
+
+	return Model{
+		Projects:      ProjectsModel{List: l},
+		CurrView:      HomeView,
+		Help:          components.Help{Model: help.New()},
+		MergeRequests: MergeRequestsModel{},
+		Toast: toast.New(toast.Model{
+			Progress: progress.New(
+				progress.WithDefaultGradient(),
+				progress.WithFillCharacters('-', ' '),
+				progress.WithoutPercentage(),
+			),
+			Interval: 10,
+			// Type:     toast.Info,
+			// Show:     true,
+			// Message:  "Info msg",
+		}),
+		Tabs: tabs.Model{
+			Tabs: []string{"Merge Requests", "Issues", "Pipelines"},
+		},
+		Paginator:       p,
+		isSidePanelOpen: true,
+	}
+}
 
 func (m Model) Init() tea.Cmd {
 	return m.Toast.Init()
@@ -112,76 +143,89 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	switch m.Tabs.ActiveTab {
-	case tabs.MergeRequests:
-		switch m.CurrView {
-		// FIX: when navigating back from Issues List it never gets here (active tab is Issues)
-		case ProjectsView:
-			projects := style.ListItemStyle.Render(m.Projects.List.View())
+	projects := style.ListDocStyle.Render(m.Projects.List.View())
+	if m.isSidePanelOpen {
+		return lipgloss.JoinHorizontal(0, projects, m.renderTableView(renderTableParams{
+			title:  "Merge Requests",
+			footer: m.Help.Model.View(MergeReqsKeys),
+			view:   m.MergeRequests.List.View(),
+		}),
+		)
+	} else {
 
-			if m.Toast.Show {
-				toast := m.Toast.View()
-				return lipgloss.JoinVertical(lipgloss.Left, toast, projects)
+		switch m.Tabs.ActiveTab {
+		case tabs.MergeRequests:
+			switch m.CurrView {
+			case MrTableView:
+				return m.renderTableView(renderTableParams{
+					title:  "Merge Requests",
+					footer: m.Help.Model.View(MergeReqsKeys),
+					view:   m.MergeRequests.List.View(),
+				})
+			// FIX: when navigating back from Issues List it never gets here (active tab is Issues)
+			case HomeView:
+				projects := style.ListDocStyle.Render(m.Projects.List.View())
+
+				if m.Toast.Show {
+					toast := m.Toast.View()
+					return lipgloss.JoinVertical(lipgloss.Left, toast, projects)
+				}
+				return projects
+
+			case MdView:
+				return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[table.MergeReqsCols.Title.Idx]), m.Md.Viewport.View(), m.footerView())
+
+			case MrCommentsView:
+				return m.renderTableView(renderTableParams{
+					title:    "Merge Requests",
+					subtitle: "Comments",
+					footer:   m.Help.Model.View(CommentsKeys),
+					view:     m.MergeRequests.Comments.View(),
+				})
+
+			case MrPipelinesView:
+				return m.renderTableView(renderTableParams{
+					title:    "Merge Requests",
+					subtitle: "Pipelines",
+					footer:   m.Help.Model.View(PipelineKeys),
+					view:     m.MergeRequests.Pipeline.View(),
+				})
+
+			case JobsView:
+				return m.renderTableView(renderTableParams{
+					title:    "Merge Requests",
+					subtitle: "Jobs",
+					footer:   m.Help.Model.View(JobsKeys),
+					view:     m.MergeRequests.PipelineJobs.View(),
+				})
+
+			default:
+				return "default"
+
 			}
-			return projects
+		case tabs.Issues:
+			switch m.CurrView {
+			case IssuesListView:
+				return m.renderTableView(renderTableParams{
+					title:  "Issues",
+					footer: m.Help.Model.View(IssuesKeys),
+					view:   m.Issues.List.View(),
+				})
 
-		case MdView:
-			return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[table.MergeReqsCols.Title.Idx]), m.Md.Viewport.View(), m.footerView())
+			case MdView:
+				return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.Issues.List.SelectedRow()[table.IssuesListCols.Title.Idx]), m.Md.Viewport.View(), m.footerView())
+			}
 
-		case MrCommentsView:
+		case tabs.Pipelines:
 			return m.renderTableView(renderTableParams{
-				title:    "Merge Requests",
-				subtitle: "Comments",
-				footer:   m.Help.Model.View(CommentsKeys),
-				view:     m.MergeRequests.Comments.View(),
+				title:  "Pipelines",
+				footer: "help model",
+				view:   "",
 			})
-
-		case MrPipelinesView:
-			return m.renderTableView(renderTableParams{
-				title:    "Merge Requests",
-				subtitle: "Pipelines",
-				footer:   m.Help.Model.View(PipelineKeys),
-				view:     m.MergeRequests.Pipeline.View(),
-			})
-
-		case JobsView:
-			return m.renderTableView(renderTableParams{
-				title:    "Merge Requests",
-				subtitle: "Jobs",
-				footer:   m.Help.Model.View(JobsKeys),
-				view:     m.MergeRequests.PipelineJobs.View(),
-			})
-
-		default:
-			return m.renderTableView(renderTableParams{
-				title:  "Merge Requests",
-				footer: m.Help.Model.View(MergeReqsKeys),
-				view:   m.MergeRequests.List.View(),
-			})
-
-		}
-	case tabs.Issues:
-		switch m.CurrView {
-		case IssuesListView:
-			return m.renderTableView(renderTableParams{
-				title:  "Issues",
-				footer: m.Help.Model.View(IssuesKeys),
-				view:   m.Issues.List.View(),
-			})
-
-		case MdView:
-			return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.Issues.List.SelectedRow()[table.IssuesListCols.Title.Idx]), m.Md.Viewport.View(), m.footerView())
 		}
 
-	case tabs.Pipelines:
-		return m.renderTableView(renderTableParams{
-			title:  "Pipelines",
-			footer: "help model",
-			view:   "",
-		})
+		return "Unsupported View"
 	}
-
-	return "Unsupported View"
 }
 
 func (m Model) getSelectedRow(idx table.TableColIndex, view views) string {

@@ -57,9 +57,13 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 
 	// Views commands
 	switch m.CurrView {
-	case ProjectsView:
+	case HomeView:
+		if msg.String() == "ctrl+o" {
+			m.toggleSidePanel()
+		}
 		switch {
 		case key.Matches(msg, ProjectsKeys.ViewMRs):
+			m.toggleSidePanel()
 			c := m.viewMergeReqs(m.Window)
 			cmds = append(cmds, c)
 		}
@@ -73,6 +77,10 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 		m.Md.Viewport, cmd = m.Md.Viewport.Update(msg)
 
 	case MrTableView:
+		if msg.String() == "ctrl+o" {
+			m.toggleSidePanel()
+		}
+
 		switch {
 		case key.Matches(msg, MergeReqsKeys.OpenInBrowser):
 			m.openInBrowser(table.MergeReqsCols.URL.Idx, MrTableView)
@@ -96,7 +104,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 			m.refetchMrList()
 
 		case key.Matches(msg, GlobalKeys.NavigateBack):
-			m.CurrView = ProjectsView
+			m.CurrView = HomeView
 
 		}
 		m.MergeRequests.List, cmd = m.MergeRequests.List.Update(msg)
@@ -162,7 +170,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 			m.openInBrowser(table.IssuesListCols.URL.Idx, IssuesListView)
 
 		case key.Matches(msg, GlobalKeys.NavigateBack):
-			m.CurrView = ProjectsView
+			m.CurrView = HomeView
 		}
 
 	}

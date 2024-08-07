@@ -134,7 +134,8 @@ func InitProjectsList() list.Model {
 	l.Title = "Disney Projects"
 	l.Styles.Title = style.ListItemStyle
 	l.Styles.PaginationStyle = style.ListPaginationStyle
-	l.Styles.HelpStyle = style.ListHelpStyle
+	// l.Styles.HelpStyle = style.ListHelpStyle
+	l.SetShowHelp(false)
 
 	return l
 }
