@@ -41,12 +41,12 @@ func GetIssues(projectID string, pageURL string) ([]table.Row, Pages, error) {
 	if pageURL != "" {
 		url = pageURL
 	} else {
-		url = fmt.Sprintf("%s/%s/projects/%s/issues", config.Config.BaseURL, config.Config.APIVersion, projectID)
+		url = fmt.Sprintf("%s/%s/projects/%s/issues", config.GlobalConfig.BaseURL, config.GlobalConfig.APIVersion, projectID)
 		mrURLParams := []string{"state=opened", "per_page=30"}
 		params = "?" + strings.Join(mrURLParams, "&")
 	}
 
-	token := config.Config.APIToken
+	token := config.GlobalConfig.APIToken
 
 	responseData, res, err := fetchData(url, fetchConfig{method: "GET", params: params, token: token})
 	if err != nil {

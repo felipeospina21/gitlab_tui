@@ -14,7 +14,7 @@ const (
 )
 
 func main() {
-	config.Load(&config.Config)
+	config.Load(&config.GlobalConfig)
 
 	m := tui.InitMainModel()
 

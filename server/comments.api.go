@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"gitlab_tui/config"
 	"gitlab_tui/internal/icon"
 	"gitlab_tui/tui/components/table"
@@ -10,20 +9,20 @@ import (
 	"strings"
 )
 
-type GetMergeRequestCommentsResponse = struct {
-	ID     int    `json:"id"`
-	Type   string `json:"type"`
-	Body   string `json:"body"`
-	Author struct {
-		Name string `json:"name"`
-	}
+type Author struct {
+	Name string `json:"name"`
+}
+type GetMergeRequestCommentsResponse struct {
+	ID        int    `json:"id"`
+	Type      string `json:"type"`
+	Body      string `json:"body"`
+	Author    Author
 	CreatedAt string `json:"created_at"`
 	Resolved  bool   `json:"resolved"`
 }
 
-func GetMergeRequestComments(projectID string, mrID string) ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.Config.BaseURL, config.Config.APIVersion, projectID, mrID)
-	token := config.Config.APIToken
+func GetMergeRequestComments(url string) ([]table.Row, error) {
+	token := config.GlobalConfig.APIToken
 	mrURLParams := []string{"order_by=updated_at"}
 	params := "?" + strings.Join(mrURLParams, "&")
 

@@ -9,16 +9,16 @@ import (
 	"github.com/spf13/viper"
 )
 
-type config struct {
+type Config struct {
 	BaseURL    string                   `mapstructure:"base_url"`
 	APIToken   string                   `mapstructure:"token"`
 	APIVersion string                   `mapstructure:"api_version"`
 	Projects   []map[string]interface{} `mapstructure:"projects"`
 }
 
-var Config config
+var GlobalConfig Config
 
-func Load(configObj *config) {
+func Load(configObj *Config) {
 	viper.SetConfigName("glabt")
 	viper.SetConfigType("toml")
 
@@ -31,7 +31,7 @@ func Load(configObj *config) {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
-	err = viper.Unmarshal(&Config)
+	err = viper.Unmarshal(&GlobalConfig)
 	if err != nil {
 		panic(fmt.Errorf("fatal error unmarshal: %w", err))
 	}
@@ -51,5 +51,5 @@ func Load(configObj *config) {
 		})
 	}
 	token := viper.Get("glabt_token")
-	Config.APIToken = token.(string)
+	GlobalConfig.APIToken = token.(string)
 }

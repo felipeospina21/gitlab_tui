@@ -26,8 +26,8 @@ type GetMergeRequestsResponse = struct {
 }
 
 func GetMergeRequests(projectID string) ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests", config.Config.BaseURL, config.Config.APIVersion, projectID)
-	token := config.Config.APIToken
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests", config.GlobalConfig.BaseURL, config.GlobalConfig.APIVersion, projectID)
+	token := config.GlobalConfig.APIToken
 	mrURLParams := []string{"state=opened"}
 	params := "?" + strings.Join(mrURLParams, "&")
 
@@ -65,8 +65,8 @@ func GetMergeRequests(projectID string) ([]table.Row, error) {
 }
 
 func MergeMR(projectID string, mergeReqIDD string) (int, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/merge", config.Config.BaseURL, config.Config.APIVersion, projectID, mergeReqIDD)
-	token := config.Config.APIToken
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/merge", config.GlobalConfig.BaseURL, config.GlobalConfig.APIVersion, projectID, mergeReqIDD)
+	token := config.GlobalConfig.APIToken
 	mrURLParams := []string{"should_remove_source_branch=true", "squash=true"}
 	params := "?" + strings.Join(mrURLParams, "&")
 

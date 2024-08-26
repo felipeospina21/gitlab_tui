@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"gitlab_tui/config"
 	"gitlab_tui/internal/exec"
 	"gitlab_tui/internal/logger"
 	"gitlab_tui/server"
@@ -42,7 +43,11 @@ func (m *Model) viewDescription() {
 }
 
 func (m *Model) viewComments() tea.Cmd {
-	r, err := server.GetMergeRequestComments(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView))
+	projectID := m.Projects.ProjectID
+	mrID := m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView)
+	url := server.BuildURL(server.MRCommentsReq, server.ReqData{ProjectID: projectID, MrID: mrID}, config.GlobalConfig)
+
+	r, err := server.GetMergeRequestComments(url)
 	c := func() tea.Msg {
 		if err != nil {
 			return err
@@ -80,7 +85,11 @@ func (m *Model) mergeMR() tea.Cmd {
 
 // Comments Table
 func (m *Model) refetchComments() {
-	r, err := server.GetMergeRequestComments(m.Projects.ProjectID, m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView))
+	projectID := m.Projects.ProjectID
+	mrID := m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView)
+	url := server.BuildURL(server.MRCommentsReq, server.ReqData{ProjectID: projectID, MrID: mrID}, config.GlobalConfig)
+
+	r, err := server.GetMergeRequestComments(url)
 	if err != nil {
 		logger.Error(err)
 	}

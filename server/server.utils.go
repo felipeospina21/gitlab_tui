@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"gitlab_tui/config"
 	"gitlab_tui/internal/icon"
 	"io"
 	"net/http"
@@ -88,4 +89,47 @@ func isPrevLink(s string) (bool, error) {
 	}
 
 	return match, nil
+}
+
+type requestsType = uint
+
+const (
+	MRListReq requestsType = iota
+	MRCommentsReq
+	MRPipelinesReq
+	JobsReq
+	IssuesReq
+	MergeMRReq
+)
+
+type ReqData struct {
+	ProjectID   string
+	MrID        string
+	MergeReqIDD string
+	PipelineID  string
+}
+
+func BuildURL(t requestsType, reqData ReqData, config config.Config) string {
+	switch t {
+	case MRListReq:
+		return fmt.Sprintf("%s/%s/projects/%s/merge_requests", config.BaseURL, config.APIVersion, reqData.ProjectID)
+
+	case MRCommentsReq:
+		return fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.BaseURL, config.APIVersion, reqData.ProjectID, reqData.MrID)
+
+	case MRPipelinesReq:
+		return fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/pipelines", config.BaseURL, config.APIVersion, reqData.ProjectID, reqData.MrID)
+
+	case JobsReq:
+		return fmt.Sprintf("%s/%s/projects/%s/pipelines/%s/jobs", config.BaseURL, config.APIVersion, reqData.ProjectID, reqData.PipelineID)
+
+	case IssuesReq:
+		return fmt.Sprintf("%s/%s/projects/%s/issues", config.BaseURL, config.APIVersion, reqData.ProjectID)
+
+	case MergeMRReq:
+		return fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/merge", config.BaseURL, config.APIVersion, reqData.ProjectID, reqData.MergeReqIDD)
+
+	default:
+		return ""
+	}
 }

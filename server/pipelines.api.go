@@ -20,8 +20,8 @@ type GetMergeRequestPipelinesResponse = struct {
 }
 
 func GetMergeRequestPipelines(projectID string, mrID string) ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/pipelines", config.Config.BaseURL, config.Config.APIVersion, projectID, mrID)
-	token := config.Config.APIToken
+	url := fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/pipelines", config.GlobalConfig.BaseURL, config.GlobalConfig.APIVersion, projectID, mrID)
+	token := config.GlobalConfig.APIToken
 
 	responseData, _, err := fetchData(url, fetchConfig{method: "GET", params: "", token: token})
 	if err != nil {
@@ -65,8 +65,8 @@ type PipelineJobsResponse = struct {
 }
 
 func GetPipelineJobs(projectID string, pipelineID string) ([]table.Row, error) {
-	url := fmt.Sprintf("%s/%s/projects/%s/pipelines/%s/jobs", config.Config.BaseURL, config.Config.APIVersion, projectID, pipelineID)
-	token := config.Config.APIToken
+	url := fmt.Sprintf("%s/%s/projects/%s/pipelines/%s/jobs", config.GlobalConfig.BaseURL, config.GlobalConfig.APIVersion, projectID, pipelineID)
+	token := config.GlobalConfig.APIToken
 
 	responseData, _, err := fetchData(url, fetchConfig{method: "GET", params: "", token: token})
 	if err != nil {

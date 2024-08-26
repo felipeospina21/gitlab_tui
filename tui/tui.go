@@ -97,7 +97,7 @@ func InitMainModel() Model {
 			Tabs: []string{"Merge Requests", "Issues", "Pipelines"},
 		},
 		Paginator:       p,
-		isSidePanelOpen: true,
+		isSidePanelOpen: false,
 	}
 }
 

@@ -115,7 +115,7 @@ type ProjectsModel struct {
 }
 
 func InitProjectsList() list.Model {
-	projects := config.Config.Projects
+	projects := config.GlobalConfig.Projects
 
 	var li []list.Item
 	var i Item
