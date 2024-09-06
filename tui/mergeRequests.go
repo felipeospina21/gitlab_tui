@@ -14,8 +14,9 @@ type MergeRequestsModel struct {
 
 func (m Model) SetMergeRequestsCommentsModel(msg []table.Row) table.Model {
 	return table.InitModel(table.InitModelParams{
-		Rows:      msg,
-		Colums:    table.GetCommentsColums(m.Window.Width),
+		Rows:   msg,
+		Colums: table.GetDiscussionsColums(m.Window.Width),
+		// Colums:    table.GetCommentsColums(m.Window.Width),
 		StyleFunc: table.StyleIconsColumns(table.Styles(table.DefaultStyle()), table.CommentsIconCols),
 	})
 }

@@ -143,6 +143,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	projects := style.ListDocStyle.Render(m.Projects.List.View())
+	// FIX: the panel should collapse after selecting a project.
+	// It is currently causing an issue with data displayed
+
 	if m.isSidePanelOpen {
 		return lipgloss.JoinHorizontal(0, projects, m.renderTableView(renderTableParams{
 			title:  "Merge Requests",

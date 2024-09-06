@@ -96,6 +96,8 @@ type requestsType = uint
 const (
 	MRListReq requestsType = iota
 	MRCommentsReq
+	MRDiscussionsReq
+	MRSingleDiscussionReq
 	MRPipelinesReq
 	JobsReq
 	IssuesReq
@@ -103,10 +105,11 @@ const (
 )
 
 type ReqData struct {
-	ProjectID   string
-	MrID        string
-	MergeReqIDD string
-	PipelineID  string
+	ProjectID    string
+	MrID         string
+	MergeReqIDD  string
+	PipelineID   string
+	DiscussionID string
 }
 
 func BuildURL(t requestsType, reqData ReqData, config config.Config) string {
@@ -116,6 +119,12 @@ func BuildURL(t requestsType, reqData ReqData, config config.Config) string {
 
 	case MRCommentsReq:
 		return fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/notes", config.BaseURL, config.APIVersion, reqData.ProjectID, reqData.MrID)
+
+	case MRDiscussionsReq:
+		return fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/discussions", config.BaseURL, config.APIVersion, reqData.ProjectID, reqData.MrID)
+
+	case MRSingleDiscussionReq:
+		return fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/discussions/%s", config.BaseURL, config.APIVersion, reqData.ProjectID, reqData.MrID, reqData.DiscussionID)
 
 	case MRPipelinesReq:
 		return fmt.Sprintf("%s/%s/projects/%s/merge_requests/%s/pipelines", config.BaseURL, config.APIVersion, reqData.ProjectID, reqData.MrID)

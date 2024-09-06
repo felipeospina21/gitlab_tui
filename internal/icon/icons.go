@@ -10,6 +10,7 @@ const (
 	Clock          = " "
 	Rebase         = " "
 	Edit           = " "
+	Person         = " "
 	Discussion     = " "
 	Gear           = " "
 	Empty          = ""
