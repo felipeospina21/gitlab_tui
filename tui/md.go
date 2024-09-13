@@ -110,6 +110,7 @@ func glamourRender(m MdModel, markdown string) (string, error) {
 	r, err := glamour.NewTermRenderer(
 		gs,
 		glamour.WithWordWrap(width),
+		glamour.WithEmoji(),
 	)
 	if err != nil {
 		return "", err

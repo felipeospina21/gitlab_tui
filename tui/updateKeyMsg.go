@@ -71,6 +71,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 		m.Projects.List, cmd = m.Projects.List.Update(msg)
 
 	case MdView:
+		// TODO: Add command to open discussion in browser
 		switch {
 		case key.Matches(msg, GlobalKeys.NavigateBack):
 			m.CurrView = m.PrevView
@@ -137,7 +138,7 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 			m.navigateToMrComment()
 
 		case key.Matches(msg, DiscussionsKeys.Description):
-			m.viewCommentContent()
+			m.viewDiscussion()
 
 		case key.Matches(msg, GlobalKeys.NavigateBack):
 			m.CurrView = MainTableView

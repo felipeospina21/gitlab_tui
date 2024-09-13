@@ -97,8 +97,7 @@ func (m *Model) refetchDiscussions() {
 	m.MergeRequests.Discussions.SetRows(r)
 }
 
-func (m *Model) viewCommentContent() {
-	// content := string(m.getSelectedRow(table.DiscussionsCols.Body.Idx, MrDiscussionsView))
+func (m *Model) viewDiscussion() {
 	projectID := m.Projects.ProjectID
 	mrID := m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView)
 	discussionID := m.getSelectedRow(table.DiscussionsCols.ID.Idx, MrDiscussionsView)

@@ -23,6 +23,7 @@ type DiscussionNote struct {
 	Resolved   bool   `json:"resolved"`
 	Resolvable bool   `json:"resolvable"`
 	ResolvedBy Author `json:"resolved_by"`
+	System     bool   `json:"system"`
 }
 
 type GetMergeRequestDiscussionsResponse struct {
@@ -103,17 +104,17 @@ func GetMergeRequestSingleDiscussion(url string) (string, error) {
 		body := item.Body
 		separator := strings.Repeat("-", 5)
 
-		if item.Resolved {
-			writeString(writeStringArgs{builder: &resolved, s: icon.Check + " ", icon: true})
-			// writeString(writeStringArgs{builder: &resolved, s: icon.Discussion + " ", icon: true})
-			writeString(writeStringArgs{builder: &resolved, s: body, italize: true})
-			writeString(writeStringArgs{builder: &resolved, s: separator})
+		if item.System {
+			writeString(writeStringArgs{builder: &content, withSpace: true, sameLine: true, s: icon.Person})
+			writeString(writeStringArgs{builder: &content, withSpace: true, sameLine: true, s: author})
+			writeString(writeStringArgs{builder: &content, s: body})
+			writeString(writeStringArgs{builder: &content, s: separator})
 		} else {
-			writeString(writeStringArgs{builder: &content, s: icon.Clock + " ", icon: true})
-			writeString(writeStringArgs{builder: &content, s: createdAt})
-			writeString(writeStringArgs{builder: &content, s: icon.Person + " ", icon: true})
-			writeString(writeStringArgs{builder: &content, s: author})
-			writeString(writeStringArgs{builder: &content, s: icon.Discussion + " ", icon: true})
+			writeString(writeStringArgs{builder: &content, withSpace: true, sameLine: true, s: icon.Clock})
+			writeString(writeStringArgs{builder: &content, withSpace: true, s: createdAt})
+			writeString(writeStringArgs{builder: &content, withSpace: true, sameLine: true, s: icon.Person})
+			writeString(writeStringArgs{builder: &content, withSpace: true, s: author})
+			writeString(writeStringArgs{builder: &content, withSpace: true, sameLine: true, s: icon.Discussion})
 			writeString(writeStringArgs{builder: &content, s: body})
 			writeString(writeStringArgs{builder: &content, s: separator})
 
@@ -126,23 +127,20 @@ func GetMergeRequestSingleDiscussion(url string) (string, error) {
 }
 
 type writeStringArgs struct {
-	builder *strings.Builder
-	s       string
-	italize bool
-	icon    bool
+	builder   *strings.Builder
+	s         string
+	sameLine  bool
+	withSpace bool
 }
 
 func writeString(args writeStringArgs) *strings.Builder {
-	if args.italize {
-		args.builder.WriteString("*")
-		args.builder.WriteString(args.s)
-		args.builder.WriteString("*")
-
+	if args.withSpace {
+		args.builder.WriteString(args.s + " ")
 	} else {
 		args.builder.WriteString(args.s)
 	}
 
-	if !args.icon {
+	if !args.sameLine {
 		args.builder.WriteString("\n\n")
 	}
 	return args.builder
