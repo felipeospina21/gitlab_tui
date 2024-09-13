@@ -88,8 +88,8 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 			case key.Matches(msg, MergeReqsKeys.OpenInBrowser):
 				m.openInBrowser(table.MergeReqsCols.URL.Idx, MainTableView)
 
-			case key.Matches(msg, MergeReqsKeys.Comments):
-				c := m.viewComments()
+			case key.Matches(msg, MergeReqsKeys.Discussions):
+				c := m.viewDiscussions()
 				cmds = append(cmds, c)
 
 			case key.Matches(msg, MergeReqsKeys.Pipelines):
@@ -128,22 +128,22 @@ func (m *Model) updateKeyMsg(msg tea.KeyMsg) (tea.Cmd, []tea.Cmd) {
 			}
 		}
 
-	case MrCommentsView:
+	case MrDiscussionsView:
 		switch {
-		case key.Matches(msg, CommentsKeys.Refetch):
-			m.refetchComments()
+		case key.Matches(msg, DiscussionsKeys.Refetch):
+			m.refetchDiscussions()
 
-		case key.Matches(msg, CommentsKeys.OpenInBrowser):
+		case key.Matches(msg, DiscussionsKeys.OpenInBrowser):
 			m.navigateToMrComment()
 
-		case key.Matches(msg, CommentsKeys.Description):
+		case key.Matches(msg, DiscussionsKeys.Description):
 			m.viewCommentContent()
 
 		case key.Matches(msg, GlobalKeys.NavigateBack):
 			m.CurrView = MainTableView
 
 		}
-		m.MergeRequests.Comments, cmd = m.MergeRequests.Comments.Update(msg)
+		m.MergeRequests.Discussions, cmd = m.MergeRequests.Discussions.Update(msg)
 
 	case MrPipelinesView:
 		switch {

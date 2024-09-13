@@ -22,7 +22,7 @@ type GetMergeRequestsResponse = struct {
 	HasConflicts        bool   `json:"has_conflicts"`
 	IsDraft             bool   `json:"draft"`
 	ID                  int    `json:"iid"`
-	Comments            int    `json:"user_notes_count"`
+	Discussions         int    `json:"user_notes_count"`
 }
 
 func GetMergeRequests(projectID string) ([]table.Row, error) {
@@ -53,7 +53,7 @@ func GetMergeRequests(projectID string) ([]table.Row, error) {
 			item.Author.Name,
 			checkMRStatus(item.DetailedMergeStatus),
 			renderIcon(item.HasConflicts, icon.Cross),
-			strconv.Itoa(item.Comments),
+			strconv.Itoa(item.Discussions),
 			item.URL,
 			item.Desc,
 			strconv.Itoa(item.ID),

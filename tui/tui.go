@@ -39,7 +39,7 @@ type Model struct {
 
 const (
 	MainTableView views = iota
-	MrCommentsView
+	MrDiscussionsView
 	MrPipelinesView
 	JobsView
 	MdView
@@ -47,23 +47,23 @@ const (
 )
 
 type SuccessMsg struct {
-	MRFetch        string
-	CommentsFetch  string
-	PipelinesFetch string
-	JobsFetch      string
-	Merge          string
-	ReloadEnv      string
-	IssuesList     string
+	MRFetch          string
+	DiscussionsFetch string
+	PipelinesFetch   string
+	JobsFetch        string
+	Merge            string
+	ReloadEnv        string
+	IssuesList       string
 }
 
 var SuccessMessage = SuccessMsg{
-	MRFetch:        "success_mr_fetch",
-	CommentsFetch:  "success_comments_fetch",
-	PipelinesFetch: "success_pipelines_fetch",
-	JobsFetch:      "success_jobs_fetch",
-	Merge:          "success_merge",
-	ReloadEnv:      "success_env_reload",
-	IssuesList:     "success_issues_list",
+	MRFetch:          "success_mr_fetch",
+	DiscussionsFetch: "success_comments_fetch",
+	PipelinesFetch:   "success_pipelines_fetch",
+	JobsFetch:        "success_jobs_fetch",
+	Merge:            "success_merge",
+	ReloadEnv:        "success_env_reload",
+	IssuesList:       "success_issues_list",
 }
 
 const (
@@ -143,8 +143,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	projects := style.ListDocStyle.Render(m.Projects.List.View())
-	// FIX: the panel should collapse after selecting a project.
-	// It is currently causing an issue with data displayed
 
 	if m.isSidePanelOpen {
 		return lipgloss.JoinHorizontal(0, projects, m.renderTableView(renderTableParams{
@@ -177,12 +175,12 @@ func (m Model) View() string {
 			case MdView:
 				return fmt.Sprintf("%s\n%s\n%s", m.headerView(m.MergeRequests.List.SelectedRow()[table.MergeReqsCols.Title.Idx]), m.Md.Viewport.View(), m.footerView())
 
-			case MrCommentsView:
+			case MrDiscussionsView:
 				return m.renderTableView(renderTableParams{
 					title:    "Merge Requests",
-					subtitle: "Comments",
-					footer:   m.Help.Model.View(CommentsKeys),
-					view:     m.MergeRequests.Comments.View(),
+					subtitle: "Discussions",
+					footer:   m.Help.Model.View(DiscussionsKeys),
+					view:     m.MergeRequests.Discussions.View(),
 				})
 
 			case MrPipelinesView:
@@ -241,8 +239,8 @@ func (m Model) getSelectedRow(idx table.TableColIndex, view views) string {
 		}
 		return "tab not supported (getSelectedRow)"
 
-	case MrCommentsView:
-		return m.MergeRequests.Comments.SelectedRow()[idx]
+	case MrDiscussionsView:
+		return m.MergeRequests.Discussions.SelectedRow()[idx]
 
 	case MrPipelinesView:
 		return m.MergeRequests.Pipeline.SelectedRow()[idx]

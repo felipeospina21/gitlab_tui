@@ -12,9 +12,10 @@ func (m *Model) updateStringMsg(msg string) (Model, tea.Cmd) {
 	switch msg {
 	case SuccessMessage.MRFetch:
 		m.CurrView = MainTableView
+		m.isSidePanelOpen = false
 
-	case SuccessMessage.CommentsFetch:
-		m.CurrView = MrCommentsView
+	case SuccessMessage.DiscussionsFetch:
+		m.CurrView = MrDiscussionsView
 		m.setSelectedMr()
 
 	case SuccessMessage.PipelinesFetch:

@@ -6,18 +6,17 @@ import (
 
 type MergeRequestsModel struct {
 	List         table.Model
-	Comments     table.Model
+	Discussions  table.Model
 	Pipeline     table.Model
 	PipelineJobs table.Model
 	SelectedMr   string
 }
 
-func (m Model) SetMergeRequestsCommentsModel(msg []table.Row) table.Model {
+func (m Model) SetMergeRequestsDiscussionsModel(msg []table.Row) table.Model {
 	return table.InitModel(table.InitModelParams{
-		Rows:   msg,
-		Colums: table.GetDiscussionsColums(m.Window.Width),
-		// Colums:    table.GetCommentsColums(m.Window.Width),
-		StyleFunc: table.StyleIconsColumns(table.Styles(table.DefaultStyle()), table.CommentsIconCols),
+		Rows:      msg,
+		Colums:    table.GetDiscussionsColums(m.Window.Width),
+		StyleFunc: table.StyleIconsColumns(table.Styles(table.DefaultStyle()), table.DiscussionsIconCols),
 	})
 }
 

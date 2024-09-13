@@ -43,22 +43,20 @@ func (m *Model) viewDescription() {
 	m.CurrView = MdView
 }
 
-func (m *Model) viewComments() tea.Cmd {
+func (m *Model) viewDiscussions() tea.Cmd {
 	projectID := m.Projects.ProjectID
 	mrID := m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView)
-	// url := server.BuildURL(server.MRCommentsReq, server.ReqData{ProjectID: projectID, MrID: mrID}, config.GlobalConfig)
 	url := server.BuildURL(server.MRDiscussionsReq, server.ReqData{ProjectID: projectID, MrID: mrID}, config.GlobalConfig)
 
 	r, err := server.GetMergeRequestDiscussions(url)
-	// r, err := server.GetMergeRequestComments(url)
 	c := func() tea.Msg {
 		if err != nil {
 			return err
 		}
 
-		return SuccessMessage.CommentsFetch
+		return SuccessMessage.DiscussionsFetch
 	}
-	m.MergeRequests.Comments = m.SetMergeRequestsCommentsModel(r)
+	m.MergeRequests.Discussions = m.SetMergeRequestsDiscussionsModel(r)
 	return c
 }
 
@@ -86,24 +84,24 @@ func (m *Model) mergeMR() tea.Cmd {
 	return c
 }
 
-// Comments Table
-func (m *Model) refetchComments() {
+// Discussions Table
+func (m *Model) refetchDiscussions() {
 	projectID := m.Projects.ProjectID
 	mrID := m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView)
-	url := server.BuildURL(server.MRCommentsReq, server.ReqData{ProjectID: projectID, MrID: mrID}, config.GlobalConfig)
+	url := server.BuildURL(server.MRDiscussionsReq, server.ReqData{ProjectID: projectID, MrID: mrID}, config.GlobalConfig)
 
-	r, err := server.GetMergeRequestComments(url)
+	r, err := server.GetMergeRequestDiscussions(url)
 	if err != nil {
 		logger.Error(err)
 	}
-	m.MergeRequests.Comments.SetRows(r)
+	m.MergeRequests.Discussions.SetRows(r)
 }
 
 func (m *Model) viewCommentContent() {
-	// content := string(m.getSelectedRow(table.CommentsCols.Body.Idx, MrCommentsView))
+	// content := string(m.getSelectedRow(table.DiscussionsCols.Body.Idx, MrDiscussionsView))
 	projectID := m.Projects.ProjectID
 	mrID := m.getSelectedRow(table.MergeReqsCols.ID.Idx, MainTableView)
-	discussionID := m.getSelectedRow(table.DiscussionsCols.ID.Idx, MrCommentsView)
+	discussionID := m.getSelectedRow(table.DiscussionsCols.ID.Idx, MrDiscussionsView)
 	url := server.BuildURL(
 		server.MRSingleDiscussionReq,
 		server.ReqData{ProjectID: projectID, MrID: mrID, DiscussionID: discussionID},
@@ -117,13 +115,13 @@ func (m *Model) viewCommentContent() {
 		})
 	}
 	m.setResponseContent(content)
-	m.PrevView = MrCommentsView
+	m.PrevView = MrDiscussionsView
 	m.CurrView = MdView
 }
 
 func (m *Model) navigateToMrComment() {
 	selectedURL := m.getSelectedRow(table.MergeReqsCols.URL.Idx, MainTableView)
-	commentID := m.getSelectedRow(table.CommentsCols.ID.Idx, MrCommentsView)
+	commentID := m.getSelectedRow(table.DiscussionsCols.ID.Idx, MrDiscussionsView)
 	exec.Openbrowser(fmt.Sprintf("%s#note_%s", selectedURL, commentID))
 }
 

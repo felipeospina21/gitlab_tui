@@ -72,7 +72,7 @@ var GlobalKeys = GlobalKeyMap{
 }
 
 type MergeReqsKeyMap struct {
-	Comments      key.Binding
+	Discussions   key.Binding
 	Pipelines     key.Binding
 	OpenInBrowser key.Binding
 	Refetch       key.Binding
@@ -82,18 +82,18 @@ type MergeReqsKeyMap struct {
 }
 
 func (k MergeReqsKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Comments, k.Pipelines, k.Description, k.OpenInBrowser, k.Merge, k.NextTab, k.PrevTab, k.NavigateBack, k.Help, k.Quit}
+	return []key.Binding{k.Discussions, k.Pipelines, k.Description, k.OpenInBrowser, k.Merge, k.NextTab, k.PrevTab, k.NavigateBack, k.Help, k.Quit}
 }
 
 func (k MergeReqsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		k.commonKeys(), // first column
-		{k.Comments, k.Pipelines, k.Description, k.OpenInBrowser, k.Merge, k.Refetch}, // second column
+		{k.Discussions, k.Pipelines, k.Description, k.OpenInBrowser, k.Merge, k.Refetch}, // second column
 	}
 }
 
 var MergeReqsKeys = MergeReqsKeyMap{
-	Comments: key.NewBinding(
+	Discussions: key.NewBinding(
 		key.WithKeys("c"),
 		key.WithHelp("c", "view comments"),
 	),
@@ -120,25 +120,25 @@ var MergeReqsKeys = MergeReqsKeyMap{
 	GlobalKeyMap: GlobalKeys,
 }
 
-type CommentsKeyMap struct {
+type DiscussionsKeyMap struct {
 	Refetch       key.Binding
 	OpenInBrowser key.Binding
 	Description   key.Binding
 	GlobalKeyMap
 }
 
-func (k CommentsKeyMap) ShortHelp() []key.Binding {
+func (k DiscussionsKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{k.Description, k.OpenInBrowser, k.Refetch, k.NextTab, k.PrevTab, k.NavigateBack, k.Help, k.Quit}
 }
 
-func (k CommentsKeyMap) FullHelp() [][]key.Binding {
+func (k DiscussionsKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		k.commonKeys(),
 		{k.Description, k.OpenInBrowser, k.Refetch},
 	}
 }
 
-var CommentsKeys = CommentsKeyMap{
+var DiscussionsKeys = DiscussionsKeyMap{
 	OpenInBrowser: key.NewBinding(
 		key.WithKeys("x"),
 		key.WithHelp("x", "open in browser"),

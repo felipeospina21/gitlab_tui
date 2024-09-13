@@ -11,7 +11,7 @@ type mergeReqsTable struct {
 	MergeStatus TableCol
 	Draft       TableCol
 	Confilcts   TableCol
-	Comments    TableCol
+	Discussions TableCol
 	URL         TableCol
 	Desc        TableCol
 	ID          TableCol
@@ -24,7 +24,7 @@ var MergeReqsCols = mergeReqsTable{
 	Author:      TableCol{Idx: 3, Name: "Author"},
 	MergeStatus: TableCol{Idx: 4, Name: "Merge Status"},
 	Confilcts:   TableCol{Idx: 5, Name: "Conflicts"},
-	Comments:    TableCol{Idx: 6, Name: "Comments"},
+	Discussions: TableCol{Idx: 6, Name: "Discussions"},
 	URL:         TableCol{Idx: 7, Name: "Url"},
 	Desc:        TableCol{Idx: 8, Name: "Description"},
 	ID:          TableCol{Idx: 9, Name: "Id"},
@@ -51,7 +51,7 @@ func GetMergeReqsColums(width int) []Column {
 		{Title: MergeReqsCols.Author.Name, Width: author},
 		{Title: MergeReqsCols.MergeStatus.Name, Width: status},
 		{Title: MergeReqsCols.Confilcts.Name, Width: i},
-		{Title: MergeReqsCols.Comments.Name, Width: i},
+		{Title: MergeReqsCols.Discussions.Name, Width: i},
 		{Title: MergeReqsCols.URL.Name, Width: url},
 		{Title: MergeReqsCols.Desc.Name, Width: 0},
 		{Title: MergeReqsCols.ID.Name, Width: 0},

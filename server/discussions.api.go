@@ -10,16 +10,25 @@ import (
 	"strings"
 )
 
-type DiscussionNotes struct {
-	GetMergeRequestCommentsResponse
+type Author struct {
+	Name string `json:"name"`
+}
+
+type DiscussionNote struct {
+	ID         int    `json:"id"`
+	Type       string `json:"type"`
+	Body       string `json:"body"`
+	Author     Author
+	CreatedAt  string `json:"created_at"`
+	Resolved   bool   `json:"resolved"`
 	Resolvable bool   `json:"resolvable"`
 	ResolvedBy Author `json:"resolved_by"`
 }
 
 type GetMergeRequestDiscussionsResponse struct {
-	ID            string            `json:"id"`
-	HasSingleNote bool              `json:"individual_notes"`
-	Notes         []DiscussionNotes `json:"notes"`
+	ID            string           `json:"id"`
+	HasSingleNote bool             `json:"individual_notes"`
+	Notes         []DiscussionNote `json:"notes"`
 }
 
 func GetMergeRequestDiscussions(url string) ([]table.Row, error) {
@@ -43,12 +52,21 @@ func GetMergeRequestDiscussions(url string) ([]table.Row, error) {
 		t := item.Notes[0].Type
 		author := item.Notes[0].Author.Name
 		comments := len(item.Notes)
+		isResolved := func() bool {
+			for _, item := range item.Notes {
+				if item.Resolvable && item.Resolved {
+					return true
+				}
+			}
+			return false
+		}()
 
 		n := table.Row{
 			createdAt,
 			author,
-			t,
 			strconv.Itoa(comments),
+			renderIcon(isResolved, icon.Check),
+			t,
 			item.Notes[0].Body,
 			item.ID,
 		}

@@ -31,13 +31,13 @@ func (m *Model) resizeMrTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 	}
 }
 
-func (m *Model) resizeMrCommentsTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
-	m.MergeRequests.Comments.SetWidth(msg.Width)
+func (m *Model) resizeMrDiscussionsTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
+	m.MergeRequests.Discussions.SetWidth(msg.Width)
 
 	t := table.InitModel(table.InitModelParams{
-		Rows:      m.MergeRequests.Comments.Rows(),
-		Colums:    table.GetCommentsColums(msg.Width - 10),
-		StyleFunc: table.StyleIconsColumns(table.Styles(table.DefaultStyle()), table.CommentsIconCols),
+		Rows:      m.MergeRequests.Discussions.Rows(),
+		Colums:    table.GetDiscussionsColums(m.Window.Width),
+		StyleFunc: table.StyleIconsColumns(table.Styles(table.DefaultStyle()), table.DiscussionsIconCols),
 	})
 
 	newM := m.UpdateModel(
@@ -64,7 +64,7 @@ func (m *Model) resizeMrPipelinesTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 
 	newM := m.UpdateModel(
 		m.MergeRequests.List,
-		m.MergeRequests.Comments,
+		m.MergeRequests.Discussions,
 		t,
 		m.Projects.List,
 		m.MergeRequests.PipelineJobs,
@@ -85,7 +85,7 @@ func (m *Model) resizePipelineJobsTable(msg tea.WindowSizeMsg) (Model, tea.Cmd) 
 
 	newM := m.UpdateModel(
 		m.MergeRequests.List,
-		m.MergeRequests.Comments,
+		m.MergeRequests.Discussions,
 		m.MergeRequests.Pipeline,
 		m.Projects.List,
 		t,
@@ -101,7 +101,7 @@ func (m *Model) resizeProjectsList(msg tea.WindowSizeMsg) {
 
 	newM := m.UpdateModel(
 		m.MergeRequests.List,
-		m.MergeRequests.Comments,
+		m.MergeRequests.Discussions,
 		m.MergeRequests.Pipeline,
 		l,
 		m.MergeRequests.PipelineJobs,
@@ -122,8 +122,8 @@ func (m *Model) resizeMdView(msg tea.WindowSizeMsg) {
 	case MainTableView:
 		content = m.getSelectedRow(table.MergeReqsCols.Desc.Idx, MainTableView)
 
-	case MrCommentsView:
-		content = m.getSelectedRow(table.CommentsCols.Body.Idx, MrCommentsView)
+	case MrDiscussionsView:
+		content = m.getSelectedRow(table.DiscussionsCols.Body.Idx, MrDiscussionsView)
 
 	default:
 		content = "Model not selected"
@@ -131,11 +131,11 @@ func (m *Model) resizeMdView(msg tea.WindowSizeMsg) {
 	m.setResponseContent(content)
 }
 
-func (m Model) UpdateModel(listModel table.Model, commentsModel table.Model, pipelinesModel table.Model, projectsModel list.Model, jobsModel table.Model) Model {
+func (m Model) UpdateModel(listModel table.Model, discussionsModel table.Model, pipelinesModel table.Model, projectsModel list.Model, jobsModel table.Model) Model {
 	newM := Model{
 		MergeRequests: MergeRequestsModel{
 			List:         listModel,
-			Comments:     commentsModel,
+			Discussions:  discussionsModel,
 			Pipeline:     pipelinesModel,
 			PipelineJobs: jobsModel,
 		},

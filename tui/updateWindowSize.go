@@ -19,8 +19,8 @@ func (m *Model) updateWindowSize(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 	case MainTableView:
 		return m.resizeMrTable(msg)
 
-	case MrCommentsView:
-		return m.resizeMrCommentsTable(msg)
+	case MrDiscussionsView:
+		return m.resizeMrDiscussionsTable(msg)
 
 	case MrPipelinesView:
 		return m.resizeMrPipelinesTable(msg)
