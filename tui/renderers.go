@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"gitlab_tui/tui/components/table"
+	"gitlab_tui/tui/components/tabs"
 	"gitlab_tui/tui/components/toast"
 	"gitlab_tui/tui/style"
 	"strings"
@@ -33,7 +34,6 @@ func (m Model) renderTableView(params renderTableParams) string {
 	} else if params.title != "" && params.subtitle != "" {
 		t = fmt.Sprintf("%s - %s %s | %s", project, params.title, params.subtitle, m.MergeRequests.SelectedMr)
 	}
-	// TODO: create footer status bar (similar to nvim)
 	table := lipgloss.JoinVertical(
 		0,
 		table.TitleStyle.Render(t),
@@ -49,7 +49,16 @@ func (m Model) renderTableView(params renderTableParams) string {
 
 	m.Tabs.Content = table
 
-	return m.Tabs.View()
+	if params.subtitle != "" {
+		m.Statusline.Content = params.subtitle
+	} else {
+		m.Statusline.Content = params.title
+	}
+
+	h := m.Window.Height - lipgloss.Height(table) - (tabs.DocStyle.GetVerticalFrameSize() * 2)
+	sl := lipgloss.PlaceVertical(h, lipgloss.Bottom, m.Statusline.View())
+
+	return lipgloss.JoinVertical(0, m.Tabs.View(), sl)
 }
 
 func (m *Model) displayToast(msg string, t toast.ToastType) tea.Cmd {

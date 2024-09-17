@@ -70,7 +70,7 @@ func (m Model) View() string {
 	doc.WriteString(m.Content)
 	// doc.WriteString(windowStyle(lipgloss.Width(row)).Render(m.Content))
 	//
-	return docStyle.Render(doc.String())
+	return DocStyle.Render(doc.String())
 }
 
 func max(a, b int) int {

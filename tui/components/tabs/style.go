@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	docStyle = lipgloss.NewStyle().Padding(1, 2, 1, 2)
+	DocStyle = lipgloss.NewStyle().Padding(1, 2, 1, 2)
 
 	highlightColor  = lipgloss.AdaptiveColor{Light: style.Violet[600], Dark: style.Violet[800]}
 	activeTabBorder = lipgloss.Border{

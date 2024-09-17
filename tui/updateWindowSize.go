@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"gitlab_tui/tui/components/statusline"
 	"gitlab_tui/tui/style"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -12,6 +13,7 @@ func (m *Model) updateWindowSize(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 	m.Window = msg
 	m.Toast.Progress.Width = msg.Width - 4
 	m.Toast.Width = msg.Width - 4
+	m.Statusline.Width = msg.Width - statusline.StatusBarStyle.GetHorizontalFrameSize()
 
 	cmd = m.setViewportViewSize(msg)
 

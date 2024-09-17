@@ -103,12 +103,9 @@ func renderWithGlamour(m MdModel, md string) string {
 
 // This is where the magic happens.
 func glamourRender(m MdModel, markdown string) (string, error) {
-	// initialize glamour
-	gs := glamour.WithStandardStyle(glamour.DarkStyle)
-
 	width := m.Viewport.Width
 	r, err := glamour.NewTermRenderer(
-		gs,
+		glamour.WithStandardStyle("dark"),
 		glamour.WithWordWrap(width),
 		glamour.WithEmoji(),
 	)

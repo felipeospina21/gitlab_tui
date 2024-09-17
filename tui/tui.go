@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gitlab_tui/tui/components"
 	"gitlab_tui/tui/components/progress"
+	"gitlab_tui/tui/components/statusline"
 	"gitlab_tui/tui/components/table"
 	"gitlab_tui/tui/components/tabs"
 	"gitlab_tui/tui/components/toast"
@@ -34,6 +35,7 @@ type Model struct {
 	Toast           toast.Model
 	Tabs            tabs.Model
 	Paginator       paginator.Model
+	Statusline      statusline.Model
 	isSidePanelOpen bool
 }
 
@@ -96,6 +98,7 @@ func InitMainModel() Model {
 		Tabs: tabs.Model{
 			Tabs: []string{"Merge Requests", "Issues", "Pipelines"},
 		},
+		Statusline:      statusline.Model{Status: statusline.Modes.Normal},
 		Paginator:       p,
 		isSidePanelOpen: false,
 	}

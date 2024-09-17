@@ -6,8 +6,8 @@
   - [x] add paginated api
   - [x] extract paginator logic to its own file
   - [x] create paginator help model
-- [x] Change comments api for discussion api https://docs.gitlab.com/ee/api/discussions.html#merge-requests
-- [x] Update md renderer to support Github Md style
+- [x] Change comments api for [discussion api](https://docs.gitlab.com/ee/api/discussions.html#merge-requests)
+- [ ] Update md renderer to support [embeded-images](https://github.com/tenkoh/goldmark-img64)
 - [ ] Update notification banner for animated toast
 - [ ] Add documentation
 - [ ] Add unit tests

@@ -152,6 +152,7 @@ func (m *Model) viewMergeReqs(window tea.WindowSizeMsg) tea.Cmd {
 	var c tea.Cmd
 	if ok {
 		m.Projects.ProjectID = i.ID
+		m.Statusline.Project = i.Name
 		r, err := server.GetMergeRequests(m.Projects.ProjectID)
 		c = func() tea.Msg {
 			if err != nil {
